@@ -1,50 +1,58 @@
-import Image from "next/image";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { PhantomConnectButton } from "@/components/PhantomConnectButton";
+"use client";
+
+import ModernHeader from "@/components/layout/ModernHeader";
+import ModernHeroSection from "@/components/sections/ModernHeroSection";
+import ModernStrategiesSection from "@/components/sections/ModernStrategiesSection";
+import ModernPortfolioSection from "@/components/sections/ModernPortfolioSection";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fafc] via-[#e0e7ff] to-[#f0fdfa] dark:from-[#18181b] dark:via-[#312e81] dark:to-[#0f172a] flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-6 sm:px-12">
-        <div className="flex items-center gap-3">
-          <Avatar>
-            <AvatarImage src="/next.svg" alt="Logo" />
-            <AvatarFallback>YX</AvatarFallback>
-          </Avatar>
-          <span className="font-bold text-xl tracking-tight text-primary">
-            YieldX
-          </span>
+    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-purple-900/20 to-slate-900">
+      <ModernHeader />
+      <ModernHeroSection />
+      <ModernStrategiesSection />
+      <ModernPortfolioSection />
+      
+      {/* Modern Footer */}
+      <footer className="relative py-20 px-6">
+        {/* Background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl"></div>
         </div>
-        <PhantomConnectButton />
-      </header>
-      {/* Main Card */}
-      <main className="flex-1 flex flex-col items-center justify-center">
-        <Card className="w-full max-w-md bg-white/80 dark:bg-black/60 shadow-2xl border-0 p-8 rounded-3xl">
-          <CardHeader>
-            <CardTitle className="text-3xl font-extrabold text-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              Welcome to YieldX
-            </CardTitle>
-          </CardHeader>
-          <p className="text-center text-lg text-muted-foreground mt-4 mb-8">
-            Explore DeFi strategies with a beautiful, modern interface inspired by{" "}
-            <span className="font-semibold text-indigo-500">rainbow.me</span>.
-          </p>
-        </Card>
-      </main>
-      {/* Footer */}
-      <footer className="flex justify-center items-center py-6 text-xs text-muted-foreground">
-        Inspired by{" "}
-        <a
-          href="https://rainbow.me"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ml-1 underline text-indigo-500"
-        >
-          rainbow.me
-        </a>
+        
+        <div className="container mx-auto relative z-10">
+          <div className="glass-card p-12 rounded-3xl border border-white/10 text-center">
+            <div className="flex items-center justify-center space-x-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-lg">Y</span>
+              </div>
+              <span className="text-2xl font-bold gradient-text">Yield-X</span>
+            </div>
+            
+            <p className="text-white/70 mb-8 max-w-md mx-auto">
+              The next generation of yield optimization on Solana blockchain
+            </p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+              {['Documentation', 'GitHub', 'Discord', 'Twitter'].map((link) => (
+                <a
+                  key={link}
+                  href="#"
+                  className="text-white/60 hover:text-white transition-colors duration-300 text-sm"
+                >
+                  {link}
+                </a>
+              ))}
+            </div>
+            
+            <div className="pt-8 border-t border-white/10">
+              <p className="text-white/40 text-sm">
+                © 2025 Yield-X Protocol. Built on Solana.
+              </p>
+            </div>
+          </div>
+        </div>
       </footer>
-    </div>
+    </main>
   );
 }
