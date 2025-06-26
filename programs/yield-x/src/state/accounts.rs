@@ -1,6 +1,6 @@
+use crate::state::{DepositState, Strategy};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::state::{DepositState, Strategy};
 
 #[derive(Accounts)]
 #[instruction(token_address: Pubkey, reward_apy: u64)]
@@ -50,7 +50,7 @@ pub struct Deposit<'info> {
     #[account(
         init,
         payer = signer,
-        space = 8 + 8 + 8 + 32 + 32 + 8,
+        space = 8 + 8 + 8 + 32 + 32 + 8 + 8,
         seeds = [b"deposit", signer.key().as_ref(), strategy.token_address.as_ref()],
         bump
     )]
