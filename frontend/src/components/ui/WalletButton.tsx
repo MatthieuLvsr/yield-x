@@ -1,11 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 const WalletButton: React.FC = () => {
   const { connected, publicKey, disconnect } = useWallet();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  // Prevent hydration errors by ensuring this only renders client-side
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  // Don't render anything until after hydration
+  if (!hasMounted) {
+    return (
+      <div className="wallet-button-custom">
+        <div className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium">
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   if (connected && publicKey) {
     return (
