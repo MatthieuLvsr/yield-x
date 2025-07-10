@@ -24,3 +24,41 @@ pub struct CreateStrategyEvent {
     pub apy: u64,
     pub timestamp: i64,
 }
+
+#[event]
+pub struct CreateMarketEvent {
+    pub market: Pubkey,
+    pub strategy: Pubkey,
+    pub yield_token_mint: Pubkey,
+    pub base_token_mint: Pubkey,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct PlaceOrderEvent {
+    pub market: Pubkey,
+    pub order: Pubkey,
+    pub owner: Pubkey,
+    pub side: String, // "Buy" or "Sell"
+    pub price: u64,
+    pub quantity: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct ExecuteTradeEvent {
+    pub market: Pubkey,
+    pub buyer: Pubkey,
+    pub seller: Pubkey,
+    pub price: u64,
+    pub quantity: u64,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct CancelOrderEvent {
+    pub market: Pubkey,
+    pub order: Pubkey,
+    pub owner: Pubkey,
+    pub timestamp: i64,
+}
