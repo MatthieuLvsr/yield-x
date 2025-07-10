@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 
 use state::*;
 
-declare_id!("4vjdLHMEk7ywaHUMoen37337vqN86cKhxoXAFRvAYveA");
+declare_id!("5AgAdfDBk9664vxvSVXLcBHMYV7sT6N6gKVbt1iE5Q7K");
 
 #[program]
 pub mod yield_app {
