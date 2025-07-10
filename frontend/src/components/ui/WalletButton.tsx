@@ -1,11 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import React, { useEffect, useState } from "react";
 
 const WalletButton: React.FC = () => {
   const { connected, publicKey, disconnect } = useWallet();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch by only showing wallet content after client mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Show loading state during hydration
+  if (!mounted) {
+    return (
+      <div className="wallet-button-custom">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 border-none rounded-xl text-white font-medium px-6 py-2.5 transition-all duration-300">
+          Connect Wallet
+        </div>
+      </div>
+    );
+  }
 
   if (connected && publicKey) {
     return (
@@ -14,10 +31,11 @@ const WalletButton: React.FC = () => {
         <div className="hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
           <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
           <span className="text-white/90 font-mono text-sm">
-            {publicKey.toString().slice(0, 4)}...{publicKey.toString().slice(-4)}
+            {publicKey.toString().slice(0, 4)}...
+            {publicKey.toString().slice(-4)}
           </span>
         </div>
-        
+
         {/* Disconnect button */}
         <button
           onClick={disconnect}
