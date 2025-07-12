@@ -8,6 +8,8 @@ import { clusterApiUrl } from '@solana/web3.js';
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
+  CoinbaseWalletAdapter,
+  // TrustWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 
 // Import wallet adapter CSS
@@ -41,6 +43,8 @@ export const SolanaProvider: React.FC<SolanaProviderProps> = ({ children }) => {
     () => [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
+      new CoinbaseWalletAdapter(),
+      // new TrustWalletAdapter(),
     ],
     [network]
   );
