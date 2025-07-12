@@ -33,6 +33,7 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let seeds = &[
         b"strategy".as_ref(),
         ctx.accounts.strategy.token_address.as_ref(),
+        &ctx.accounts.strategy.reward_apy.to_le_bytes(),
         &[ctx.bumps.strategy],
     ];
     mint_to(

@@ -8,6 +8,7 @@ import { useMemo, useCallback } from 'react';
 import { PROGRAM_ID } from '../lib/constants';
 import idl from '../idl/idl.json';
 import { getTokenDecimals, toTokenBaseUnits } from '../lib/tokenUtils';
+import { deriveStrategyPda, deriveStrategyTokenAccountPda, deriveDepositPda } from '../lib/pda';
 
 export const useYieldProgram = () => {
   const { connection } = useConnection();
@@ -53,12 +54,17 @@ export const useYieldProgram = () => {
     try {
       console.log('Starting deposit:', { strategyAddress: strategyAddress.toString(), tokenMint: tokenMint.toString(), amount });
 
-      // Récupérer les données de la stratégie pour obtenir le yield token mint
+      // Récupérer les données de la stratégie pour obtenir le yield token mint et l'APY
       const strategyAccount = await program.account.strategy.fetch(strategyAddress);
       console.log('Strategy account data:', strategyAccount);
       
       const yieldTokenMint = new PublicKey((strategyAccount as any).tokenYieldAddress);
+      const apy = (strategyAccount as any).rewardApy;
       console.log('Yield token mint:', yieldTokenMint.toString());
+      console.log('Strategy APY:', apy);
+
+      // Convertir l'APY en bytes pour le PDA
+      const apyBytes = new BN(apy).toArrayLike(Buffer, 'le', 8);
 
       // Récupérer dynamiquement les décimales du token
       const decimals = await getTokenDecimals(connection, tokenMint);
@@ -67,15 +73,8 @@ export const useYieldProgram = () => {
       // Convertir le montant en unités de base du token
       const depositAmount = new BN(toTokenBaseUnits(amount, decimals).toString());
 
-      // Dériver les PDAs nécessaires (correspondant à accounts.rs)
-      const [depositPda] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("deposit"),
-          wallet.publicKey.toBytes(),
-          tokenMint.toBytes() // Utiliser tokenMint au lieu de strategyAddress
-        ],
-        program.programId
-      );
+      // Dériver les PDAs nécessaires avec l'APY inclus
+      const depositPda = deriveDepositPda(wallet.publicKey, tokenMint, apy, program.programId);
 
       console.log('Deposit PDA:', depositPda.toString());
 
@@ -85,14 +84,8 @@ export const useYieldProgram = () => {
         wallet.publicKey
       );
 
-      // Calculer le strategyTokenAccount avec les bonnes seeds
-      const [strategyTokenAccount] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("strategy_token"),
-          tokenMint.toBytes()
-        ],
-        program.programId
-      );
+      // Calculer le strategyTokenAccount avec les bonnes seeds (incluant APY)
+      const strategyTokenAccount = deriveStrategyTokenAccountPda(tokenMint, apy, program.programId);
 
       const userYieldTokenAccount = await getAssociatedTokenAddress(
         yieldTokenMint,
@@ -248,9 +241,99 @@ export const useYieldProgram = () => {
     }
   }, [program]);
 
+  const redeem = useCallback(async (
+    depositAddress: PublicKey,
+    withPenalty: boolean = false
+  ) => {
+    if (!program || !wallet.publicKey || !wallet.sendTransaction) {
+      throw new Error('Program or wallet not available');
+    }
+
+    try {
+      console.log('Starting redeem process...');
+      console.log('Deposit address:', depositAddress.toString());
+      console.log('With penalty:', withPenalty);
+
+      // Récupérer les données du dépôt
+      const depositData = await program.account.depositState.fetch(depositAddress);
+      console.log('Deposit data:', depositData);
+
+      // Récupérer les données de la stratégie
+      const strategyAddress = (depositData as any).strategyAddress;
+      const strategyData = await program.account.strategy.fetch(strategyAddress);
+      console.log('Strategy data:', strategyData);
+
+      const tokenMint = (strategyData as any).tokenAddress;
+      const yieldTokenMint = (strategyData as any).tokenYieldAddress;
+      const apy = (strategyData as any).rewardApy;
+
+      // Convertir l'APY en bytes pour le PDA
+      const apyBytes = new BN(apy).toArrayLike(Buffer, 'le', 8);
+
+      // Dériver les PDAs et comptes nécessaires avec l'APY inclus
+      const strategyPda = deriveStrategyPda(tokenMint, apy, program.programId);
+
+      // PDA pour le strategy_token_account avec APY
+      const strategyTokenAccount = deriveStrategyTokenAccountPda(tokenMint, apy, program.programId);
+
+      const userTokenAccount = await getAssociatedTokenAddress(
+        tokenMint,
+        wallet.publicKey
+      );
+
+      const userYieldTokenAccount = await getAssociatedTokenAddress(
+        yieldTokenMint,
+        wallet.publicKey
+      );
+
+      console.log('Accounts for redeem:', {
+        deposit: depositAddress.toString(),
+        strategy: strategyAddress.toString(),
+        strategyTokenAccount: strategyTokenAccount.toString(),
+        tokenMint: tokenMint.toString(),
+        yieldTokenMint: yieldTokenMint.toString(),
+        userTokenAccount: userTokenAccount.toString(),
+        userYieldTokenAccount: userYieldTokenAccount.toString(),
+        signer: wallet.publicKey.toString(),
+      });
+
+      // Créer la transaction de redeem
+      const tx = await program.methods
+        .redeem(withPenalty)
+        .accounts({
+          strategy: strategyAddress,
+          strategyTokenAccount: strategyTokenAccount,
+          userTokenAccount: userTokenAccount,
+          userYieldTokenAccount: userYieldTokenAccount,
+          yieldTokenMint: yieldTokenMint,
+          deposit: depositAddress,
+          signer: wallet.publicKey,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .transaction();
+
+      // Envoyer la transaction
+      const signature = await wallet.sendTransaction(tx, connection);
+      console.log('Redeem transaction sent:', signature);
+      
+      // Attendre la confirmation
+      await connection.confirmTransaction(signature, 'confirmed');
+      console.log('Redeem transaction confirmed:', signature);
+      
+      return {
+        signature,
+        depositAddress,
+      };
+    } catch (error) {
+      console.error('Error redeeming:', error);
+      throw error;
+    }
+  }, [program, wallet.publicKey, wallet.sendTransaction, connection]);
+
   return {
     program,
     deposit,
+    redeem,
     getUserDeposits,
     getAllStrategies,
     isReady: !!program && !!wallet.publicKey,

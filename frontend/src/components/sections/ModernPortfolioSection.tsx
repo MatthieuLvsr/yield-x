@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useUserDeposits } from '@/hooks/useUserDeposits';
 import { useStrategies } from '@/hooks/useStrategies';
+import { useYieldProgram } from '@/hooks/useYieldProgram';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { formatCurrency, formatDate, formatTimeRemaining } from '@/lib/formatters';
 import { PublicKey } from '@solana/web3.js';
@@ -33,11 +34,15 @@ const getStatusColor = (status: string) => {
 
 const ModernPortfolioSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'positions'>('overview');
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const { connected } = useWallet();
   
   // Récupérer les données depuis les hooks
-  const { deposits, stats, isLoading: depositsLoading, error: depositsError } = useUserDeposits();
+  const { deposits, stats, isLoading: depositsLoading, error: depositsError, refetch } = useUserDeposits();
   const { strategies, isLoading: strategiesLoading } = useStrategies();
+  const { redeem } = useYieldProgram();
   
   // Convertir les dépôts en positions formatées pour l'UI
   const positions = useMemo(() => {
@@ -87,6 +92,71 @@ const ModernPortfolioSection: React.FC = () => {
   
   // État de chargement global
   const isLoading = depositsLoading || strategiesLoading;
+
+  // Fonctions de gestion des actions
+  const handleAddMore = (position: Position) => {
+    // Pour l'instant, on affiche juste une alerte
+    alert('Add More functionality coming soon!');
+  };
+
+  const handleWithdraw = (position: Position) => {
+    setSelectedPosition(position);
+    setShowWithdrawModal(true);
+  };
+
+  // Fonction pour calculer le yield basé sur le temps écoulé (comme dans le smart contract)
+  const calculateYieldFromTime = (position: Position) => {
+    const now = Date.now() / 1000; // timestamp actuel en secondes
+    const depositTimestamp = new Date(position.depositDate).getTime() / 1000;
+    const elapsed = Math.max(0, now - depositTimestamp);
+    const secondsInYear = 31_536_000;
+    
+    // Calcul identique au smart contract
+    const yieldAmount = (position.deposited * position.apy * elapsed) / (100 * secondsInYear);
+    return yieldAmount;
+  };
+
+  const handleConfirmWithdraw = async () => {
+    if (!selectedPosition || !redeem) return;
+    
+    setIsWithdrawing(true);
+    try {
+      console.log('Starting redeem process for position:', selectedPosition.id);
+      
+      const depositAddress = new PublicKey(selectedPosition.id);
+      const withPenalty = selectedPosition.timeUntilMaturity > 0;
+      
+      console.log('Redeem parameters:', {
+        depositAddress: depositAddress.toString(),
+        withPenalty,
+      });
+      
+      const result = await redeem(depositAddress, withPenalty);
+      
+      console.log('Redeem successful:', result);
+      
+      // Rafraîchir les données
+      await refetch();
+      
+      // Fermer le modal
+      setShowWithdrawModal(false);
+      setSelectedPosition(null);
+      
+      // Afficher un message de succès
+      alert(`${withPenalty ? 'Early redemption' : 'Withdrawal'} successful! Transaction: ${result.signature}`);
+      
+    } catch (error) {
+      console.error('Redeem error:', error);
+      alert(`${selectedPosition.timeUntilMaturity > 0 ? 'Early redemption' : 'Withdrawal'} failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsWithdrawing(false);
+    }
+  };
+
+  const handleCancelWithdraw = () => {
+    setShowWithdrawModal(false);
+    setSelectedPosition(null);
+  };
 
   return (
     <section className="py-24 px-6 relative">
@@ -357,16 +427,35 @@ const ModernPortfolioSection: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="flex space-x-3 mt-6 pt-6 border-t border-white/10">
-                      <button className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 text-sm">
-                        Add More
-                      </button>
+                      {/* Add More Button - Disabled for now */}
                       <button 
-                        className="px-4 py-2 glass-card border border-white/20 text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300 text-sm"
-                        disabled={!position.timeUntilMaturity || position.timeUntilMaturity > 0}
+                        className="px-4 py-2 bg-gray-600 text-gray-400 font-medium rounded-lg cursor-not-allowed transition-all duration-300 text-sm relative group"
+                        disabled
+                        title="Coming Soon"
                       >
-                        {position.timeUntilMaturity > 0 ? 'Locked' : 'Withdraw'}
+                        Add More
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                          Coming Soon
+                        </div>
                       </button>
-                      <button className="px-4 py-2 text-white/70 hover:text-white transition-colors duration-300 text-sm">
+                      
+                      {/* Withdraw/Redeem Button */}
+                      <button 
+                        onClick={() => handleWithdraw(position)}
+                        className={`px-4 py-2 font-medium rounded-lg transition-all duration-300 text-sm ${
+                          position.timeUntilMaturity > 0
+                            ? 'bg-orange-600 hover:bg-orange-700 text-white border border-orange-500'
+                            : 'glass-card border border-white/20 text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {position.timeUntilMaturity > 0 ? 'Early Redeem' : 'Withdraw'}
+                      </button>
+                      
+                      {/* View Details Button */}
+                      <button 
+                        className="px-4 py-2 text-white/70 hover:text-white transition-colors duration-300 text-sm"
+                        onClick={() => alert('View Details functionality coming soon!')}
+                      >
                         View Details
                       </button>
                     </div>
@@ -377,6 +466,135 @@ const ModernPortfolioSection: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Withdraw Confirmation Modal */}
+      {showWithdrawModal && selectedPosition && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            className="glass-card p-6 rounded-2xl border border-white/20 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h3 className="text-xl font-bold text-white mb-4">
+              {selectedPosition.timeUntilMaturity > 0 ? 'Early Redemption Warning' : 'Confirm Withdrawal'}
+            </h3>
+
+            {selectedPosition.timeUntilMaturity > 0 ? (
+              <div className="space-y-4">
+                <div className="bg-orange-500/20 border border-orange-500/30 rounded-xl p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <span className="text-orange-400 text-xl">⚠️</span>
+                    <span className="text-orange-400 font-semibold">Penalty Warning</span>
+                  </div>
+                  <p className="text-white/80 text-sm">
+                    Your position has not reached maturity yet. Early redemption will result in a 10% penalty on the total amount.
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  {(() => {
+                    const currentYield = calculateYieldFromTime(selectedPosition);
+                    const totalBeforePenalty = selectedPosition.deposited + currentYield;
+                    const penalty = totalBeforePenalty * 0.1;
+                    const finalAmount = totalBeforePenalty - penalty;
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Original Amount:</span>
+                          <span className="text-white">{formatCurrency(selectedPosition.deposited)} {selectedPosition.token}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Current Yield (time-based):</span>
+                          <span className="text-purple-400">+{formatCurrency(currentYield)} {selectedPosition.token}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Total Before Penalty:</span>
+                          <span className="text-white">{formatCurrency(totalBeforePenalty)} {selectedPosition.token}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Time Until Maturity:</span>
+                          <span className="text-orange-400">{formatTimeRemaining(selectedPosition.timeUntilMaturity)}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-white/10 pt-2">
+                          <span className="text-white/70">Penalty (10% of total):</span>
+                          <span className="text-red-400">-{formatCurrency(penalty)} {selectedPosition.token}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold">
+                          <span className="text-white">You'll Receive:</span>
+                          <span className="text-white">{formatCurrency(finalAmount)} {selectedPosition.token}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+
+                <p className="text-white/60 text-xs">
+                  * Yield is calculated proportionally based on time elapsed since deposit. A 10% penalty is applied to the total amount (principal + time-based yield) for early redemption.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <span className="text-green-400 text-xl">✅</span>
+                    <span className="text-green-400 font-semibold">Position Matured</span>
+                  </div>
+                  <p className="text-white/80 text-sm">
+                    Your position has reached maturity. You can withdraw without any penalties.
+                  </p>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  {(() => {
+                    const currentYield = calculateYieldFromTime(selectedPosition);
+                    const totalAmount = selectedPosition.deposited + currentYield;
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Original Amount:</span>
+                          <span className="text-white">{formatCurrency(selectedPosition.deposited)} {selectedPosition.token}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-white/70">Total Yield (time-based):</span>
+                          <span className="text-purple-400">+{formatCurrency(currentYield)} {selectedPosition.token}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold border-t border-white/10 pt-2">
+                          <span className="text-white">You'll Receive:</span>
+                          <span className="text-green-400">{formatCurrency(totalAmount)} {selectedPosition.token}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={handleCancelWithdraw}
+                className="flex-1 px-4 py-2 glass-card border border-white/20 text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300"
+                disabled={isWithdrawing}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmWithdraw}
+                className={`flex-1 px-4 py-2 font-medium rounded-lg transition-all duration-300 ${
+                  selectedPosition.timeUntilMaturity > 0
+                    ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+                disabled={isWithdrawing}
+              >
+                {isWithdrawing ? 'Processing...' : selectedPosition.timeUntilMaturity > 0 ? 'Redeem Early' : 'Withdraw'}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 };

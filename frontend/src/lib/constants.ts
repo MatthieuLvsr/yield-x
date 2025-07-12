@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js';
 import { IDL } from '../types/yield_app';
 
-export const PROGRAM_ID = new PublicKey('9io1JC8pUndHgSv3GU2mCs1vrADcfY2rhE5Cip3kXL4k');
+export const PROGRAM_ID = new PublicKey('QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk');
 
 export { IDL };
 
