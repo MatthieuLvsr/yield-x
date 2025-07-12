@@ -1,5 +1,5 @@
 [toolchain]
-package_manager = "yarn"
+package_manager = "npm"
 anchor_version = "0.31.1"
 
 [features]
@@ -7,7 +7,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-yield_x = "J28y8Le2qfQjFPZxEEMfgvDTnf9sZdBg7cgcMzBaYfdm"
+yield_x = "5AgAdfDBk9664vxvSVXLcBHMYV7sT6N6gKVbt1iE5Q7K"
 
 [registry]
 url = "https://api.apr.dev"
@@ -17,4 +17,4 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
