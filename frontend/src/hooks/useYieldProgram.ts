@@ -176,8 +176,60 @@ export const useYieldProgram = () => {
     if (!program || !wallet.publicKey) return [];
 
     try {
-      // Retourner des données simulées pour l'instant
-      return [];
+      console.log('Fetching user deposits for:', wallet.publicKey.toString());
+      
+      // Récupérer tous les comptes DepositState du programme
+      const allDeposits = await program.account.depositState.all();
+      console.log('All deposits found:', allDeposits.length);
+      
+      // Filtrer pour ne garder que ceux de l'utilisateur
+      const userDeposits = allDeposits.filter(deposit => 
+        (deposit.account as any).user.toString() === wallet.publicKey!.toString()
+      );
+      
+      console.log('User deposits found:', userDeposits.length);
+      
+      // Formater les données pour l'UI
+      const formattedDeposits = await Promise.all(
+        userDeposits.map(async (deposit) => {
+          try {
+            const depositAccount = deposit.account as any;
+            
+            // Récupérer les données de la stratégie associée
+            const strategyData = await program.account.strategy.fetch(
+              depositAccount.strategyAddress
+            );
+            
+            // Calculer les informations utiles
+            const currentTime = Math.floor(Date.now() / 1000);
+            const timeUntilMaturity = depositAccount.maturityDate.toNumber() - currentTime;
+            const isMatured = timeUntilMaturity <= 0;
+            
+            return {
+              publicKey: deposit.publicKey.toString(),
+              amount: depositAccount.montant.toString(),
+              yieldAmount: depositAccount.montantYield.toString(),
+              depositDate: new Date(depositAccount.date.toNumber() * 1000).toISOString(),
+              maturityDate: new Date(depositAccount.maturityDate.toNumber() * 1000).toISOString(),
+              timeUntilMaturity: Math.max(0, timeUntilMaturity),
+              isMatured,
+              strategyAddress: depositAccount.strategyAddress.toString(),
+              tokenAddress: (strategyData as any).tokenAddress.toString(),
+              yieldTokenAddress: (strategyData as any).tokenYieldAddress.toString(),
+              apy: (strategyData as any).rewardApy.toString(),
+            };
+          } catch (error) {
+            console.error('Error processing deposit:', error);
+            return null;
+          }
+        })
+      );
+      
+      // Filtrer les résultats null
+      const validDeposits = formattedDeposits.filter(deposit => deposit !== null);
+      console.log('Valid formatted deposits:', validDeposits);
+      
+      return validDeposits;
     } catch (error) {
       console.error('Error fetching user deposits:', error);
       return [];
