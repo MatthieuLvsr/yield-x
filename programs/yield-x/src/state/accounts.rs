@@ -32,7 +32,7 @@ pub struct CreateStrategy<'info> {
 pub struct Deposit<'info> {
     #[account(
         mut,
-        seeds = [b"strategy", &strategy.token_address.to_bytes()],
+        seeds = [b"strategy", strategy.token_address.key().as_ref()],
         bump,
     )]
     pub strategy: Account<'info, Strategy>,
@@ -41,7 +41,7 @@ pub struct Deposit<'info> {
         payer = signer,
         token::mint = token_mint,
         token::authority = strategy,
-        seeds = [b"strategy_token", strategy.token_address.as_ref()],
+        seeds = [b"strategy_token", strategy.token_address.key().as_ref()],
         bump,
     )]
     pub strategy_token_account: Account<'info, TokenAccount>,
@@ -50,8 +50,8 @@ pub struct Deposit<'info> {
     #[account(
         init,
         payer = signer,
-        space = 8 + 8 + 8 + 32 + 32 + 8,
-        seeds = [b"deposit", signer.key().as_ref(), strategy.token_address.as_ref()],
+        space = 8 + 8 + 8 + 32 + 32 + 8 + 8,
+        seeds = [b"deposit", signer.key().as_ref(), strategy.token_address.key().as_ref()],
         bump
     )]
     pub deposit: Account<'info, DepositState>,
@@ -72,13 +72,13 @@ pub struct Deposit<'info> {
 pub struct Redeem<'info> {
     #[account(
         mut,
-        seeds = [b"strategy", &strategy.token_address.to_bytes()],
+        seeds = [b"strategy", strategy.token_address.key().as_ref()],
         bump,
     )]
     pub strategy: Account<'info, Strategy>,
     #[account(
         mut,
-        seeds = [b"strategy_token", strategy.token_address.as_ref()],
+        seeds = [b"strategy_token", strategy.token_address.key().as_ref()],
         bump,
     )]
     pub strategy_token_account: Account<'info, TokenAccount>,
@@ -90,7 +90,7 @@ pub struct Redeem<'info> {
     pub yield_token_mint: Account<'info, Mint>,
     #[account(
         mut,
-        seeds = [b"deposit", signer.key().as_ref(), strategy.token_address.as_ref()],
+        seeds = [b"deposit", signer.key().as_ref(), strategy.token_address.key().as_ref()],
         bump,
     )]
     pub deposit: Account<'info, DepositState>,

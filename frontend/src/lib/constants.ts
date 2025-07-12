@@ -1,16 +1,20 @@
 import { PublicKey } from '@solana/web3.js';
 import { IDL } from '../types/yield_app';
 
-export const PROGRAM_ID = new PublicKey('4vjdLHMEk7ywaHUMoen37337vqN86cKhxoXAFRvAYveA');
+export const PROGRAM_ID = new PublicKey('9io1JC8pUndHgSv3GU2mCs1vrADcfY2rhE5Cip3kXL4k');
 
 export { IDL };
 
 // Known token mints for the strategies
 export const TOKEN_MINTS = {
-  USDC: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), // USDC mainnet
-  SOL: new PublicKey('So11111111111111111111111111111111111111112'), // Wrapped SOL
-  RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // Raydium
-  // For devnet testing, you might want to use different addresses
+  // Devnet addresses
+  USDC: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'), // USDC devnet
+  SOL: new PublicKey('So11111111111111111111111111111111111111112'), // Wrapped SOL (same for all networks)
+  RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // RAY devnet (using a test token)
+  
+  // Mainnet addresses (commented for reference)
+  // USDC: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), // USDC mainnet
+  // RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // Raydium mainnet
 };
 
 // Strategy configurations

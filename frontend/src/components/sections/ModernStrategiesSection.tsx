@@ -3,50 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import DepositModalModern from '@/components/ui/DepositModalModern';
-
-interface Strategy {
-  id: string;
-  name: string;
-  token: string;
-  apy: number;
-  risk: 'Low' | 'Medium' | 'High';
-  tvl: string;
-  description: string;
-  protocol: string;
-}
-
-const strategies: Strategy[] = [
-  {
-    id: '1',
-    name: 'Stable Yield',
-    token: 'USDC',
-    apy: 8.5,
-    risk: 'Low',
-    tvl: '$4.2M',
-    description: 'Earn stable yield on USDC through lending protocols',
-    protocol: 'Solend'
-  },
-  {
-    id: '2',
-    name: 'SOL Staking+',
-    token: 'SOL',
-    apy: 15.2,
-    risk: 'Medium',
-    tvl: '$12.8M',
-    description: 'Enhanced SOL staking with DeFi yield optimization',
-    protocol: 'Marinade'
-  },
-  {
-    id: '3',
-    name: 'LP Farming',
-    token: 'RAY-SOL',
-    apy: 24.8,
-    risk: 'High',
-    tvl: '$2.1M',
-    description: 'Provide liquidity and farm rewards on Raydium',
-    protocol: 'Raydium'
-  }
-];
+import { useStrategies, FormattedStrategy } from '@/hooks/useStrategies';
 
 const getRiskColor = (risk: string) => {
   switch (risk) {
@@ -57,7 +14,7 @@ const getRiskColor = (risk: string) => {
   }
 };
 
-const StrategyCard: React.FC<{ strategy: Strategy; index: number; onDeposit: (strategy: Strategy) => void }> = ({ strategy, index, onDeposit }) => {
+const StrategyCard: React.FC<{ strategy: FormattedStrategy; index: number; onDeposit: (strategy: FormattedStrategy) => void }> = ({ strategy, index, onDeposit }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -127,10 +84,13 @@ const StrategyCard: React.FC<{ strategy: Strategy; index: number; onDeposit: (st
 };
 
 const ModernStrategiesSection: React.FC = () => {
-  const [selectedStrategy, setSelectedStrategy] = useState<Strategy | null>(null);
+  const [selectedStrategy, setSelectedStrategy] = useState<FormattedStrategy | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Utiliser le hook pour récupérer les stratégies dynamiquement
+  const { strategies, isLoading, error, refetch } = useStrategies();
 
-  const handleDeposit = (strategy: Strategy) => {
+  const handleDeposit = (strategy: FormattedStrategy) => {
     setSelectedStrategy(strategy);
     setIsModalOpen(true);
   };
@@ -139,6 +99,44 @@ const ModernStrategiesSection: React.FC = () => {
     setIsModalOpen(false);
     setSelectedStrategy(null);
   };
+
+  // Affichage de chargement
+  if (isLoading) {
+    return (
+      <section className="py-24 px-6 relative">
+        <div className="container mx-auto relative z-10">
+          <div className="text-center">
+            <div className="inline-flex items-center space-x-2 text-white/60">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white/60 rounded-full animate-spin"></div>
+              <span>Loading strategies...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Affichage d'erreur
+  if (error) {
+    return (
+      <section className="py-24 px-6 relative">
+        <div className="container mx-auto relative z-10">
+          <div className="text-center">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 max-w-md mx-auto">
+              <h3 className="text-red-400 font-medium mb-2">Failed to load strategies</h3>
+              <p className="text-white/70 text-sm mb-4">{error}</p>
+              <button 
+                onClick={refetch}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-24 px-6 relative">
@@ -164,6 +162,20 @@ const ModernStrategiesSection: React.FC = () => {
             Choose from our curated selection of yield strategies, each optimized 
             for different risk profiles and return expectations.
           </p>
+          
+          {/* Refresh button and strategies info */}
+          <div className="flex items-center justify-center space-x-4 mt-6">
+            <button
+              onClick={refetch}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <span>🔄</span>
+              <span>Refresh Strategies</span>
+            </button>
+            <span className="text-white/60 text-sm">
+              {strategies.length} strategies available
+            </span>
+          </div>
         </motion.div>
 
         {/* Strategies Grid */}
