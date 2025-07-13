@@ -1,13 +1,35 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { 
+  ChartBarIcon, 
+  LockClosedIcon, 
+  XMarkIcon, 
+  ExclamationTriangleIcon, 
+  CheckCircleIcon,
+  EyeIcon,
+  EyeSlashIcon 
+} from '@heroicons/react/24/outline';
 import { useUserDeposits } from '@/hooks/useUserDeposits';
 import { useStrategies } from '@/hooks/useStrategies';
 import { useYieldProgram } from '@/hooks/useYieldProgram';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { formatCurrency, formatDate, formatTimeRemaining } from '@/lib/formatters';
 import { PublicKey } from '@solana/web3.js';
+import { 
+  mockAPI, 
+  getMockPortfolioStats, 
+  getMockPositions, 
+  getRiskLevelColor,
+  MockPortfolioStats,
+  MockPosition 
+} from '@/lib/mockData';
+import { isUsingMockData, isDemoModeEnabled } from '@/lib/config';
+import PortfolioLineChart from '@/components/ui/PortfolioLineChart';
+import PortfolioPieChart from '@/components/ui/PortfolioPieChart';
+import PortfolioBarChart from '@/components/ui/PortfolioBarChart';
+import RewardsAreaChart from '@/components/ui/RewardsAreaChart';
 
 interface Position {
   id: string;
@@ -37,15 +59,69 @@ const ModernPortfolioSection: React.FC = () => {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  // Use environment configuration for demo mode
+  const [isDemoMode, setIsDemoMode] = useState(isUsingMockData() || isDemoModeEnabled());
+  
+  // Mock data states
+  const [mockStats, setMockStats] = useState<MockPortfolioStats | null>(null);
+  const [mockPositions, setMockPositions] = useState<MockPosition[]>([]);
+  const [isMockLoading, setIsMockLoading] = useState(false);
+  const [chartData, setChartData] = useState<any>({
+    performance: [],
+    rewards: [],
+    assetAllocation: [],
+    strategyPerformance: []
+  });
+  
   const { connected } = useWallet();
   
-  // Récupérer les données depuis les hooks
+  // Récupérer les données depuis les hooks (données réelles)
   const { deposits, stats, isLoading: depositsLoading, error: depositsError, refetch } = useUserDeposits();
   const { strategies, isLoading: strategiesLoading } = useStrategies();
   const { redeem } = useYieldProgram();
+
+  // Load mock data when demo mode is enabled
+  useEffect(() => {
+    if (isDemoMode) {
+      setIsMockLoading(true);
+      
+      // Simulate API calls with proper delays
+      Promise.all([
+        mockAPI.getPortfolioStats(),
+        mockAPI.getPositions(),
+        mockAPI.getPerformanceData(30),
+        mockAPI.getRewardsData(30),
+        mockAPI.getAssetAllocation(),
+        mockAPI.getStrategyPerformance()
+      ]).then(([stats, positions, performance, rewards, allocation, strategyPerf]) => {
+        setMockStats(stats);
+        setMockPositions(positions);
+        setChartData({
+          performance,
+          rewards,
+          assetAllocation: allocation,
+          strategyPerformance: strategyPerf
+        });
+        setIsMockLoading(false);
+      }).catch((error) => {
+        console.error('Error loading mock data:', error);
+        setIsMockLoading(false);
+      });
+    } else {
+      // Clear mock data when switching back to live mode
+      setMockStats(null);
+      setMockPositions([]);
+      setChartData({
+        performance: [],
+        rewards: [],
+        assetAllocation: [],
+        strategyPerformance: []
+      });
+    }
+  }, [isDemoMode]);
   
-  // Convertir les dépôts en positions formatées pour l'UI
-  const positions = useMemo(() => {
+  // Convertir les dépôts en positions formatées pour l'UI (données réelles)
+  const realPositions = useMemo(() => {
     if (!deposits || !strategies) return [];
     
     return deposits.map((deposit): Position => {
@@ -83,15 +159,56 @@ const ModernPortfolioSection: React.FC = () => {
       };
     });
   }, [deposits, strategies]);
+
+  // Use mock or real data based on demo mode
+  const positions = useMemo(() => {
+    if (isDemoMode) {
+      return mockPositions.map((mockPos): Position => ({
+        id: mockPos.id,
+        strategy: mockPos.strategy,
+        token: mockPos.token,
+        deposited: mockPos.deposited,
+        currentValue: mockPos.currentValue,
+        apy: mockPos.apy,
+        rewards: mockPos.rewards,
+        status: mockPos.status,
+        depositDate: mockPos.depositDate,
+        maturityDate: mockPos.maturityDate,
+        timeUntilMaturity: mockPos.timeUntilMaturity,
+      }));
+    }
+    return realPositions;
+  }, [isDemoMode, mockPositions, realPositions]);
   
   // Calculer les statistiques du portfolio
-  const totalValue = positions.reduce((sum, pos) => sum + pos.currentValue, 0);
-  const totalDeposited = positions.reduce((sum, pos) => sum + pos.deposited, 0);
-  const totalRewards = positions.reduce((sum, pos) => sum + pos.rewards, 0);
-  const totalReturn = totalDeposited > 0 ? ((totalValue - totalDeposited) / totalDeposited) * 100 : 0;
+  const portfolioStats = useMemo(() => {
+    if (isDemoMode && mockStats) {
+      return {
+        totalValue: mockStats.totalValue,
+        totalDeposited: mockStats.totalDeposited,
+        totalRewards: mockStats.totalRewards,
+        totalReturn: mockStats.totalReturn,
+        activePositions: mockStats.activePositions
+      };
+    }
+    
+    // Real data calculations
+    const totalValue = positions.reduce((sum, pos) => sum + pos.currentValue, 0);
+    const totalDeposited = positions.reduce((sum, pos) => sum + pos.deposited, 0);
+    const totalRewards = positions.reduce((sum, pos) => sum + pos.rewards, 0);
+    const totalReturn = totalDeposited > 0 ? ((totalValue - totalDeposited) / totalDeposited) * 100 : 0;
+    
+    return {
+      totalValue,
+      totalDeposited,
+      totalRewards,
+      totalReturn,
+      activePositions: positions.length
+    };
+  }, [isDemoMode, mockStats, positions]);
   
   // État de chargement global
-  const isLoading = depositsLoading || strategiesLoading;
+  const isLoading = isDemoMode ? isMockLoading : (depositsLoading || strategiesLoading);
 
   // Fonctions de gestion des actions
   const handleAddMore = (position: Position) => {
@@ -174,13 +291,42 @@ const ModernPortfolioSection: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="text-white">Your</span>
-            <span className="gradient-text ml-4">Portfolio</span>
-          </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto">
-            Track your yield farming performance and manage your active positions.
+          <div className="flex justify-center items-center gap-4 mb-6">
+            <h2 className="text-5xl md:text-6xl font-bold">
+              <span className="text-white">Your</span>
+              <span className="yieldx-text-gradient ml-4">Portfolio</span>
+            </h2>
+            
+            {/* Demo Mode Toggle */}
+            <button
+              onClick={() => setIsDemoMode(!isDemoMode)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all duration-300 ${
+                isDemoMode
+                  ? 'bg-blue-500/20 border-blue-400/30 text-blue-300'
+                  : 'bg-gray-700/20 border-gray-600/30 text-gray-400 hover:text-white'
+              }`}
+            >
+              {isDemoMode ? <EyeIcon className="w-4 h-4" /> : <EyeSlashIcon className="w-4 h-4" />}
+              <span className="text-sm font-medium">
+                {isDemoMode ? 'Demo Mode' : 'Live Data'}
+              </span>
+            </button>
+          </div>
+          
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            {isDemoMode 
+              ? 'Explore the portfolio interface with sample data. Toggle to "Live Data" to see your real positions.'
+              : 'Track your yield farming performance and manage your active positions.'
+            }
           </p>
+          
+          {isDemoMode && (
+            <div className="mt-4 p-3 bg-blue-500/10 border border-blue-400/20 rounded-lg max-w-md mx-auto">
+              <p className="text-blue-300 text-sm">
+                🎯 Demo mode active - showing fictional portfolio data for demonstration
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* Portfolio Stats */}
@@ -192,7 +338,7 @@ const ModernPortfolioSection: React.FC = () => {
         >
           <div className="glass-card p-6 rounded-2xl border border-white/10">
             <div className="text-3xl font-bold gradient-text mb-2">
-              {isLoading ? '...' : `$${totalValue.toFixed(2)}`}
+              {isLoading ? '...' : `$${portfolioStats.totalValue.toFixed(2)}`}
             </div>
             <div className="text-white/60 text-sm uppercase tracking-wider">
               Total Value
@@ -201,7 +347,7 @@ const ModernPortfolioSection: React.FC = () => {
 
           <div className="glass-card p-6 rounded-2xl border border-white/10">
             <div className="text-3xl font-bold text-green-400 mb-2">
-              {isLoading ? '...' : `$${totalRewards.toFixed(2)}`}
+              {isLoading ? '...' : `$${portfolioStats.totalRewards.toFixed(2)}`}
             </div>
             <div className="text-white/60 text-sm uppercase tracking-wider">
               Total Rewards
@@ -210,7 +356,7 @@ const ModernPortfolioSection: React.FC = () => {
 
           <div className="glass-card p-6 rounded-2xl border border-white/10">
             <div className="text-3xl font-bold text-blue-400 mb-2">
-              {isLoading ? '...' : `+${totalReturn.toFixed(1)}%`}
+              {isLoading ? '...' : `+${portfolioStats.totalReturn.toFixed(1)}%`}
             </div>
             <div className="text-white/60 text-sm uppercase tracking-wider">
               Total Return
@@ -219,7 +365,7 @@ const ModernPortfolioSection: React.FC = () => {
 
           <div className="glass-card p-6 rounded-2xl border border-white/10">
             <div className="text-3xl font-bold text-purple-400 mb-2">
-              {isLoading ? '...' : positions.length}
+              {isLoading ? '...' : portfolioStats.activePositions}
             </div>
             <div className="text-white/60 text-sm uppercase tracking-wider">
               Active Positions
@@ -229,7 +375,7 @@ const ModernPortfolioSection: React.FC = () => {
 
         {/* Tab Navigation */}
         <motion.div
-          className="flex space-x-2 mb-8 p-1 glass-card rounded-xl border border-white/10 w-fit mx-auto"
+          className="flex space-x-2 mb-8 p-1 yieldx-card-glass rounded-xl border border-white/10 w-fit mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
@@ -240,8 +386,8 @@ const ModernPortfolioSection: React.FC = () => {
               onClick={() => setActiveTab(tab as 'overview' | 'positions')}
               className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 capitalize ${
                 activeTab === tab
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
-                  : 'text-white/70 hover:text-white hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-blue-500/30'
+                  : 'text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
               {tab}
@@ -257,40 +403,214 @@ const ModernPortfolioSection: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           {activeTab === 'overview' && (
-            <div className="glass-card p-8 rounded-2xl border border-white/10">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-white mb-4">
-                  Portfolio Performance
-                </h3>
-                <p className="text-white/70 mb-8">
-                  Detailed analytics coming soon. Connect with our API to track real-time performance.
-                </p>
-                <div className="h-64 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl flex items-center justify-center border border-white/10">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-white text-2xl">📊</span>
-                    </div>
-                    <p className="text-white/60">Performance Chart</p>
-                    <p className="text-white/40 text-sm">Coming Soon</p>
+            <div className="space-y-8">
+              {/* Overview Stats Cards - Always show, with demo or real data */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="yieldx-card-glass p-6 rounded-xl border border-white/10">
+                  <div className="text-2xl font-bold text-blue-400 mb-2">
+                    {isLoading ? '...' : isDemoMode && mockStats ? 
+                      `${mockStats.portfolioGrowth.toFixed(1)}%` : 
+                      portfolioStats.totalReturn > 0 ? `+${(portfolioStats.totalReturn * 0.3).toFixed(1)}%` : '0.0%'
+                    }
+                  </div>
+                  <div className="text-white/60 text-sm uppercase tracking-wider">
+                    30-Day Growth
                   </div>
                 </div>
+                
+                <div className="yieldx-card-glass p-6 rounded-xl border border-white/10">
+                  <div className="text-2xl font-bold text-green-400 mb-2">
+                    {isLoading ? '...' : isDemoMode && mockStats ? 
+                      `$${mockStats.monthlyEarnings.toFixed(0)}` : 
+                      portfolioStats.totalRewards > 0 ? `$${(portfolioStats.totalRewards * 1.2).toFixed(0)}` : '$0'
+                    }
+                  </div>
+                  <div className="text-white/60 text-sm uppercase tracking-wider">
+                    Monthly Earnings
+                  </div>
+                </div>
+                
+                <div className="yieldx-card-glass p-6 rounded-xl border border-white/10">
+                  <div className="text-2xl font-bold text-purple-400 mb-2">
+                    {isLoading ? '...' : isDemoMode && mockStats ? 
+                      `${mockStats.avgAPY.toFixed(1)}%` : 
+                      positions.length > 0 ? `${(positions.reduce((sum, p) => sum + p.apy, 0) / positions.length).toFixed(1)}%` : '0.0%'
+                    }
+                  </div>
+                  <div className="text-white/60 text-sm uppercase tracking-wider">
+                    Weighted Avg APY
+                  </div>
+                </div>
+                
+                <div className="yieldx-card-glass p-6 rounded-xl border border-white/10">
+                  <div className="text-2xl font-bold text-yellow-400 mb-2">
+                    {isLoading ? '...' : isDemoMode ? 
+                      mockPositions.filter(p => p.status === 'Active').length : 
+                      positions.filter(p => p.status === 'Active').length
+                    }
+                  </div>
+                  <div className="text-white/60 text-sm uppercase tracking-wider">
+                    Active Strategies
+                  </div>
+                </div>
+              </div>
+
+              {/* Charts Section */}
+              {isDemoMode && !isMockLoading && chartData.performance.length > 0 ? (
+                <div className="space-y-8">
+                  {/* Portfolio Performance Chart */}
+                  <PortfolioLineChart 
+                    data={chartData.performance}
+                    title="Portfolio Value Over Time"
+                    height={350}
+                  />
+
+                  {/* Charts Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Asset Allocation */}
+                    <PortfolioPieChart 
+                      data={chartData.assetAllocation}
+                      title="Asset Allocation"
+                      height={400}
+                    />
+
+                    {/* Rewards Chart */}
+                    <RewardsAreaChart 
+                      data={chartData.rewards}
+                      title="Daily & Cumulative Rewards"
+                      height={400}
+                    />
+                  </div>
+
+                  {/* Strategy Performance Chart */}
+                  <PortfolioBarChart 
+                    data={chartData.strategyPerformance}
+                    title="Strategy Performance (APY vs Value)"
+                    height={400}
+                  />
+                </div>
+              ) : (
+                /* Chart Placeholders */
+                <div className="yieldx-card-glass p-8 rounded-2xl border border-white/10">
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      Portfolio Performance
+                    </h3>
+                    <p className="text-gray-300 mb-8">
+                      {isDemoMode 
+                        ? (isMockLoading ? 'Loading interactive charts...' : 'Interactive charts will be integrated with real-time data from the API.')
+                        : 'Detailed analytics coming soon. Connect with our API to track real-time performance.'
+                      }
+                    </p>
+                    <div className="h-64 yieldx-card-glass rounded-xl flex items-center justify-center border border-white/10">
+                      <div className="text-center">
+                        <div className="w-16 h-16 yieldx-card-glass rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                          <ChartBarIcon className="w-8 h-8 text-blue-400" />
+                        </div>
+                        <p className="text-gray-400">
+                          {isMockLoading ? 'Loading Charts...' : 'Performance Chart'}
+                        </p>
+                        <p className="text-rgb(var(--yieldx-text-tertiary)) text-sm">
+                          {isDemoMode 
+                            ? (isMockLoading ? 'Preparing Demo Data' : 'Demo Mode - Chart Placeholder')
+                            : 'Coming Soon'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Strategy Breakdown - Show in both modes */}
+              <div className="yieldx-card-glass p-8 rounded-2xl border border-white/10">
+                <h3 className="text-2xl font-bold text-white mb-6">Strategy Breakdown</h3>
+                
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
+                      <span className="text-white text-lg">⏳</span>
+                    </div>
+                    <p className="text-gray-400">Loading strategy breakdown...</p>
+                  </div>
+                ) : positions.length === 0 && !isDemoMode ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 mb-4">No positions to analyze yet.</p>
+                    <p className="text-gray-500 text-sm">Your strategy breakdown will appear here once you start investing.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {isDemoMode ? (
+                      // Demo mode: Show risk-based breakdown
+                      ['Low', 'Medium', 'High'].map((risk) => {
+                        const riskPositions = mockPositions.filter(p => p.riskLevel === risk);
+                        const riskValue = riskPositions.reduce((sum, p) => sum + p.currentValue, 0);
+                        const percentage = mockStats ? ((riskValue / mockStats.totalValue) * 100).toFixed(1) : '0';
+                        
+                        return (
+                          <div key={risk} className="yieldx-card-glass p-4 rounded-lg border border-white/10">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium">{risk} Risk</span>
+                              <span className={`px-2 py-1 rounded text-xs ${getRiskLevelColor(risk as any)}`}>
+                                {riskPositions.length} positions
+                              </span>
+                            </div>
+                            <div className="text-lg font-bold text-white">${riskValue.toFixed(2)}</div>
+                            <div className="text-sm text-gray-400">{percentage}% of portfolio</div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      // Live mode: Show token-based breakdown
+                      Object.entries(
+                        positions.reduce((acc, pos) => {
+                          acc[pos.token] = (acc[pos.token] || 0) + pos.currentValue;
+                          return acc;
+                        }, {} as Record<string, number>)
+                      ).map(([token, value]) => {
+                        const percentage = portfolioStats.totalValue > 0 ? 
+                          ((value / portfolioStats.totalValue) * 100).toFixed(1) : '0';
+                        const tokenPositions = positions.filter(p => p.token === token);
+                        
+                        return (
+                          <div key={token} className="yieldx-card-glass p-4 rounded-lg border border-white/10">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium">{token}</span>
+                              <span className="px-2 py-1 rounded text-xs bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                                {tokenPositions.length} positions
+                              </span>
+                            </div>
+                            <div className="text-lg font-bold text-white">${value.toFixed(2)}</div>
+                            <div className="text-sm text-gray-400">{percentage}% of portfolio</div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {activeTab === 'positions' && (
             <div className="space-y-6">
-              {!connected ? (
-                <div className="glass-card p-8 rounded-2xl border border-white/10 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-2xl">🔒</span>
+              {(!connected && !isDemoMode) ? (
+                <div className="yieldx-card-glass p-8 text-center">
+                  <div className="w-16 h-16 yieldx-card-neon rounded-full flex items-center justify-center mx-auto mb-4">
+                    <LockClosedIcon className="w-8 h-8 text-rgb(var(--yieldx-electric-blue))" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
+                  <h3 className="text-xl font-bold text-rgb(var(--yieldx-text-primary)) mb-2">
                     Connect Your Wallet
                   </h3>
-                  <p className="text-white/60">
-                    Please connect your wallet to view your positions
+                  <p className="text-rgb(var(--yieldx-text-secondary)) mb-4">
+                    Please connect your wallet to view your positions, or enable demo mode to explore the interface.
                   </p>
+                  <button 
+                    onClick={() => setIsDemoMode(true)}
+                    className="yieldx-btn-ghost text-sm"
+                  >
+                    Try Demo Mode
+                  </button>
                 </div>
               ) : isLoading ? (
                 <div className="glass-card p-8 rounded-2xl border border-white/10 text-center">
@@ -298,21 +618,24 @@ const ModernPortfolioSection: React.FC = () => {
                     <span className="text-white text-2xl">⏳</span>
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">
-                    Loading Positions...
+                    {isDemoMode ? 'Loading Demo Data...' : 'Loading Positions...'}
                   </h3>
                   <p className="text-white/60">
-                    Fetching your portfolio data from the blockchain
+                    {isDemoMode 
+                      ? 'Simulating API calls and preparing demo portfolio...'
+                      : 'Fetching your portfolio data from the blockchain'
+                    }
                   </p>
                 </div>
-              ) : depositsError ? (
-                <div className="glass-card p-8 rounded-2xl border border-red-500/20 text-center">
-                  <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-red-400 text-2xl">❌</span>
+              ) : (!isDemoMode && depositsError) ? (
+                <div className="yieldx-card-glass p-8 border border-rgb(var(--yieldx-plasma-pink))/20 text-center">
+                  <div className="w-16 h-16 bg-rgb(var(--yieldx-plasma-pink))/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <XMarkIcon className="w-8 h-8 text-rgb(var(--yieldx-plasma-pink))" />
                   </div>
-                  <h3 className="text-xl font-bold text-red-400 mb-2">
+                  <h3 className="text-xl font-bold text-rgb(var(--yieldx-plasma-pink)) mb-2">
                     Error Loading Positions
                   </h3>
-                  <p className="text-white/60 mb-4">
+                  <p className="text-rgb(var(--yieldx-text-secondary)) mb-4">
                     {depositsError}
                   </p>
                   <button 
@@ -323,46 +646,82 @@ const ModernPortfolioSection: React.FC = () => {
                   </button>
                 </div>
               ) : positions.length === 0 ? (
-                <div className="glass-card p-8 rounded-2xl border border-white/10 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-white text-2xl">📊</span>
+                <div className="yieldx-card-glass p-8 text-center">
+                  <div className="w-16 h-16 yieldx-card-neon rounded-full flex items-center justify-center mx-auto mb-4">
+                    <ChartBarIcon className="w-8 h-8 text-rgb(var(--yieldx-electric-blue))" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
+                  <h3 className="text-xl font-bold text-rgb(var(--yieldx-text-primary)) mb-2">
                     No Positions Yet
                   </h3>
-                  <p className="text-white/60 mb-4">
+                  <p className="text-rgb(var(--yieldx-text-secondary)) mb-4">
                     You don't have any active positions. Start by depositing into a strategy!
                   </p>
                   <button 
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 text-sm"
+                    className="yieldx-btn-primary text-sm"
                   >
                     Browse Strategies
                   </button>
                 </div>
               ) : (
-                positions.map((position, index) => (
-                  <motion.div
-                    key={position.id}
-                    className="glass-card p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-4 lg:space-y-0">
-                      {/* Left: Strategy Info */}
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                          <span className="text-white font-bold">{position.token.charAt(0)}</span>
+                <div className="space-y-6">
+                  {/* Demo Mode Indicator */}
+                  {isDemoMode && (
+                    <div className="yieldx-card-glass p-4 rounded-xl border border-blue-400/20 bg-blue-500/5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                          <EyeIcon className="w-4 h-4 text-blue-400" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-white">{position.strategy}</h3>
-                          <p className="text-white/60 text-sm">{position.token}</p>
-                        </div>
-                        <div className={`px-3 py-1 rounded-full border text-xs font-medium ${getStatusColor(position.status)}`}>
-                          {position.status}
+                          <p className="text-blue-300 font-medium text-sm">Demo Portfolio Active</p>
+                          <p className="text-blue-400/70 text-xs">
+                            Showing {mockPositions.length} fictional positions across various DeFi protocols
+                          </p>
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {positions.map((position, index) => {
+                    // Get mock position data for enhanced display
+                    const mockPos = isDemoMode ? mockPositions.find(p => p.id === position.id) : null;
+                    
+                    return (
+                      <motion.div
+                        key={position.id}
+                        className="glass-card p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                      >
+                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-4 lg:space-y-0">
+                          {/* Left: Strategy Info */}
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                              <span className="text-white font-bold">{position.token.charAt(0)}</span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-white">{position.strategy}</h3>
+                                {/* Risk Level Badge for Demo Mode */}
+                                {mockPos && (
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${getRiskLevelColor(mockPos.riskLevel)}`}>
+                                    {mockPos.riskLevel} Risk
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <p className="text-white/60 text-sm">{position.token}</p>
+                                {/* Platform Badge for Demo Mode */}
+                                {mockPos && (
+                                  <span className="text-gray-400 text-xs">• {mockPos.platform}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className={`px-3 py-1 rounded-full border text-xs font-medium ${getStatusColor(position.status)}`}>
+                              {position.status}
+                            </div>
+                          </div>
 
                       {/* Right: Metrics */}
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full lg:w-auto">
@@ -460,7 +819,9 @@ const ModernPortfolioSection: React.FC = () => {
                       </button>
                     </div>
                   </motion.div>
-                ))
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}
@@ -469,30 +830,34 @@ const ModernPortfolioSection: React.FC = () => {
 
       {/* Withdraw Confirmation Modal */}
       {showWithdrawModal && selectedPosition && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
           <motion.div
-            className="glass-card p-6 rounded-2xl border border-white/20 max-w-md w-full"
+            className="yieldx-card-glass p-8 rounded-2xl border border-white/30 max-w-md w-full shadow-2xl"
+            style={{
+              background: 'rgba(20, 20, 25, 0.95)',
+              backdropFilter: 'blur(20px)',
+            }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <h3 className="text-xl font-bold text-white mb-4">
+            <h3 className="text-2xl font-bold text-white mb-6">
               {selectedPosition.timeUntilMaturity > 0 ? 'Early Redemption Warning' : 'Confirm Withdrawal'}
             </h3>
 
             {selectedPosition.timeUntilMaturity > 0 ? (
-              <div className="space-y-4">
-                <div className="bg-orange-500/20 border border-orange-500/30 rounded-xl p-4">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <span className="text-orange-400 text-xl">⚠️</span>
-                    <span className="text-orange-400 font-semibold">Penalty Warning</span>
+              <div className="space-y-6">
+                <div className="bg-orange-500/25 border border-orange-400/50 rounded-xl p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <ExclamationTriangleIcon className="w-6 h-6 text-orange-300" />
+                    <span className="text-orange-200 font-semibold text-lg">Penalty Warning</span>
                   </div>
-                  <p className="text-white/80 text-sm">
+                  <p className="text-gray-100 text-sm leading-relaxed">
                     Your position has not reached maturity yet. Early redemption will result in a 10% penalty on the total amount.
                   </p>
                 </div>
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-3 text-sm bg-gray-800/60 border border-gray-700/50 p-4 rounded-lg">
                   {(() => {
                     const currentYield = calculateYieldFromTime(selectedPosition);
                     const totalBeforePenalty = selectedPosition.deposited + currentYield;
@@ -502,24 +867,24 @@ const ModernPortfolioSection: React.FC = () => {
                     return (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Original Amount:</span>
-                          <span className="text-white">{formatCurrency(selectedPosition.deposited)} {selectedPosition.token}</span>
+                          <span className="text-gray-200">Original Amount:</span>
+                          <span className="text-white font-medium">{formatCurrency(selectedPosition.deposited)} {selectedPosition.token}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Current Yield (time-based):</span>
-                          <span className="text-purple-400">+{formatCurrency(currentYield)} {selectedPosition.token}</span>
+                          <span className="text-gray-200">Current Yield (time-based):</span>
+                          <span className="text-green-300 font-medium">+{formatCurrency(currentYield)} {selectedPosition.token}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Total Before Penalty:</span>
+                          <span className="text-gray-200">Total Before Penalty:</span>
                           <span className="text-white">{formatCurrency(totalBeforePenalty)} {selectedPosition.token}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Time Until Maturity:</span>
-                          <span className="text-orange-400">{formatTimeRemaining(selectedPosition.timeUntilMaturity)}</span>
+                          <span className="text-gray-200">Time Until Maturity:</span>
+                          <span className="text-orange-300">{formatTimeRemaining(selectedPosition.timeUntilMaturity)}</span>
                         </div>
-                        <div className="flex justify-between border-t border-white/10 pt-2">
-                          <span className="text-white/70">Penalty (10% of total):</span>
-                          <span className="text-red-400">-{formatCurrency(penalty)} {selectedPosition.token}</span>
+                        <div className="flex justify-between border-t border-white/20 pt-2">
+                          <span className="text-gray-200">Penalty (10% of total):</span>
+                          <span className="text-red-300 font-medium">-{formatCurrency(penalty)} {selectedPosition.token}</span>
                         </div>
                         <div className="flex justify-between font-semibold">
                           <span className="text-white">You'll Receive:</span>
@@ -530,23 +895,23 @@ const ModernPortfolioSection: React.FC = () => {
                   })()}
                 </div>
 
-                <p className="text-white/60 text-xs">
+                <p className="text-gray-300 text-xs">
                   * Yield is calculated proportionally based on time elapsed since deposit. A 10% penalty is applied to the total amount (principal + time-based yield) for early redemption.
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4">
+                <div className="bg-green-500/25 border border-green-400/50 rounded-xl p-4">
                   <div className="flex items-center space-x-3 mb-2">
-                    <span className="text-green-400 text-xl">✅</span>
-                    <span className="text-green-400 font-semibold">Position Matured</span>
+                    <CheckCircleIcon className="w-5 h-5 text-green-300" />
+                    <span className="text-green-200 font-semibold">Position Matured</span>
                   </div>
-                  <p className="text-white/80 text-sm">
+                  <p className="text-gray-100 text-sm">
                     Your position has reached maturity. You can withdraw without any penalties.
                   </p>
                 </div>
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm bg-gray-800/60 border border-gray-700/50 p-4 rounded-lg">
                   {(() => {
                     const currentYield = calculateYieldFromTime(selectedPosition);
                     const totalAmount = selectedPosition.deposited + currentYield;
@@ -554,16 +919,16 @@ const ModernPortfolioSection: React.FC = () => {
                     return (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Original Amount:</span>
+                          <span className="text-gray-200">Original Amount:</span>
                           <span className="text-white">{formatCurrency(selectedPosition.deposited)} {selectedPosition.token}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-white/70">Total Yield (time-based):</span>
-                          <span className="text-purple-400">+{formatCurrency(currentYield)} {selectedPosition.token}</span>
+                          <span className="text-gray-200">Total Yield (time-based):</span>
+                          <span className="text-purple-300">+{formatCurrency(currentYield)} {selectedPosition.token}</span>
                         </div>
-                        <div className="flex justify-between font-semibold border-t border-white/10 pt-2">
+                        <div className="flex justify-between font-semibold border-t border-white/20 pt-2">
                           <span className="text-white">You'll Receive:</span>
-                          <span className="text-green-400">{formatCurrency(totalAmount)} {selectedPosition.token}</span>
+                          <span className="text-green-300">{formatCurrency(totalAmount)} {selectedPosition.token}</span>
                         </div>
                       </>
                     );
@@ -575,7 +940,7 @@ const ModernPortfolioSection: React.FC = () => {
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleCancelWithdraw}
-                className="flex-1 px-4 py-2 glass-card border border-white/20 text-white font-medium rounded-lg hover:bg-white/10 transition-all duration-300"
+                className="flex-1 px-4 py-2 bg-gray-700/60 border border-gray-600/50 text-gray-200 font-medium rounded-lg hover:bg-gray-600/60 hover:text-white transition-all duration-300"
                 disabled={isWithdrawing}
               >
                 Cancel
@@ -584,8 +949,8 @@ const ModernPortfolioSection: React.FC = () => {
                 onClick={handleConfirmWithdraw}
                 className={`flex-1 px-4 py-2 font-medium rounded-lg transition-all duration-300 ${
                   selectedPosition.timeUntilMaturity > 0
-                    ? 'bg-orange-600 hover:bg-orange-700 text-white'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
+                    ? 'bg-orange-600 hover:bg-orange-700 text-white border border-orange-500/50'
+                    : 'bg-green-600 hover:bg-green-700 text-white border border-green-500/50'
                 }`}
                 disabled={isWithdrawing}
               >
