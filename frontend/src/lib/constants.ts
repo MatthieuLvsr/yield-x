@@ -5,6 +5,15 @@ export const PROGRAM_ID = new PublicKey('QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi
 
 export { IDL };
 
+// Social Media Links
+export const SOCIAL_LINKS = {
+  DISCORD: process.env.NEXT_PUBLIC_DISCORD_INVITE || 'https://discord.gg/yield-x',
+  TWITTER: process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com/yieldx',
+  GITHUB: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/yield-x',
+  DOCS: process.env.NEXT_PUBLIC_DOCS_URL || 'https://docs.yieldx.com',
+  TELEGRAM: process.env.NEXT_PUBLIC_TELEGRAM_URL || 'https://t.me/yieldx',
+};
+
 // Known token mints for the strategies
 export const TOKEN_MINTS = {
   // Devnet addresses
