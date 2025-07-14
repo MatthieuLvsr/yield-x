@@ -133,7 +133,7 @@ const ModernPortfolioSection: React.FC = () => {
     goToNextPage,
     goToPreviousPage,
     stats: paginationStats,
-  } = useUserDepositsPagination(enrichedDeposits || [], 12);
+  } = useUserDepositsPagination(enrichedDeposits || [], 6);
 
   // Load mock data when demo mode is enabled
   useEffect(() => {
@@ -752,7 +752,7 @@ const ModernPortfolioSection: React.FC = () => {
           )}
 
           {activeTab === 'positions' && (
-            <div className="space-y-6 h-screen overflow-y-auto" style={{ 
+            <div className="space-y-6" style={{ 
               transform: 'translateZ(0)', 
               backfaceVisibility: 'hidden',
               willChange: 'transform',
@@ -828,7 +828,7 @@ const ModernPortfolioSection: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6 min-h-screen overflow-hidden" style={{ 
+                <div className="space-y-6" style={{ 
                   transform: 'translateZ(0)', 
                   backfaceVisibility: 'hidden',
                   willChange: 'transform'
@@ -851,7 +851,7 @@ const ModernPortfolioSection: React.FC = () => {
                   )}
 
                   {/* Filters and Controls */}
-                  <div className="space-y-4 sticky top-0 bg-black/20 backdrop-blur-sm z-10 pb-4" style={{ 
+                  <div className="space-y-4 mb-6" style={{ 
                     willChange: 'transform',
                     transform: 'translateZ(0)',
                     backfaceVisibility: 'hidden'
@@ -956,13 +956,13 @@ const ModernPortfolioSection: React.FC = () => {
                   </div>
 
                   {/* Positions Display */}
-                  <div className="min-h-[800px] max-h-[800px] overflow-y-auto transition-all duration-300" style={{ 
+                  <div className="transition-all duration-300" style={{ 
                     willChange: 'transform',
                     transform: 'translateZ(0)',
                     backfaceVisibility: 'hidden',
                     position: 'relative'
                   }}>
-                    <div className="space-y-4 h-full">
+                    <div className="space-y-4">
                       {viewMode === 'grid' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max transition-all duration-300">
                           {paginatedDeposits.map((deposit) => (
@@ -988,7 +988,7 @@ const ModernPortfolioSection: React.FC = () => {
                       )}
 
                       {viewMode === 'table' && (
-                        <div className="h-full transition-all duration-300">
+                        <div className="transition-all duration-300">
                           <UserDepositTable
                             deposits={paginatedDeposits}
                             onAction={handlePositionAction}
@@ -1008,7 +1008,7 @@ const ModernPortfolioSection: React.FC = () => {
                         currentPage={paginationInfo.currentPage}
                         totalPages={paginationInfo.totalPages}
                         totalItems={filteredDeposits.length}
-                        itemsPerPage={12}
+                        itemsPerPage={6}
                         startIndex={paginationInfo.startIndex}
                         endIndex={paginationInfo.endIndex}
                         onPageChange={goToPage}
