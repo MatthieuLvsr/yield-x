@@ -67,10 +67,10 @@ const CyberLogo: React.FC<CyberLogoProps> = ({
       {/* Corner accents */}
       {size === 'hero' || size === '3xl' || size === '2xl' ? (
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-electric-blue" />
-          <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-electric-blue" />
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-neon-green" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-neon-green" />
+          <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-cyan-400" />
+          <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-blue-400" />
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-teal-400" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-green-400" />
         </div>
       ) : null}
     </div>

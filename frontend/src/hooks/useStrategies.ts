@@ -2,6 +2,8 @@ import { useConnection } from '@solana/wallet-adapter-react';
 import { useEffect, useState, useCallback } from 'react';
 import { PublicKey, Connection } from '@solana/web3.js';
 import { PROGRAM_ID, TOKEN_MINTS } from '../lib/constants';
+import { isUsingMockData, getMockDelay } from '../lib/config';
+import { getMockStrategies } from '../lib/mockStrategies';
 
 // Interface pour les stratégies récupérées du contrat
 export interface OnChainStrategy {
@@ -140,6 +142,19 @@ export const useStrategies = () => {
     setError(null);
 
     try {
+      // Utiliser les données mock si le mode est activé
+      if (isUsingMockData()) {
+        console.log('🔄 Loading mock strategies...');
+        
+        // Simuler un délai d'API
+        await new Promise(resolve => setTimeout(resolve, getMockDelay()));
+        
+        const mockStrategies = getMockStrategies();
+        console.log('✅ Mock strategies loaded:', mockStrategies.length);
+        setStrategies(mockStrategies);
+        return;
+      }
+
       console.log('Fetching strategies from program:', PROGRAM_ID.toString());
 
       // Récupérer tous les comptes qui appartiennent au programme

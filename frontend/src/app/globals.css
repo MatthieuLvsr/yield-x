@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@import "tailwindcss";
-
 @layer base {
   :root {
     /* Nouvelle palette Yield-X basée sur le logo */

@@ -91,10 +91,10 @@ const YieldProtocolOverview: React.FC = () => {
                 >
                   <CyberLogo variant="icon" size="hero" glowEffect={true} />
                 </motion.div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className="relative text-4xl md:text-5xl font-bold mb-6">
             <span className="yieldx-text-gradient">Protocol Overview</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="relative text-xl text-gray-300 max-w-3xl mx-auto">
             Yield-X is a decentralized yield optimization protocol built on Solana, 
             designed to maximize returns while minimizing risks through advanced strategies.
           </p>
