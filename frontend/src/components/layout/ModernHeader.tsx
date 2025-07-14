@@ -24,7 +24,8 @@ const ModernHeader: React.FC = () => {
         <nav className="hidden md:flex items-center space-x-10">
           {[
             { name: 'Protocol', href: '#protocol' },
-            { name: 'Strategies', href: '#strategies' },
+            { name: 'Strategies', href: '/strategies' },
+            { name: 'Demo', href: '/demo' },
             { name: 'Portfolio', href: '#portfolio' },
             { name: 'Analytics', href: '#analytics' }
           ].map((item, index) => (
@@ -74,14 +75,20 @@ const ModernHeader: React.FC = () => {
           exit={{ opacity: 0, height: 0 }}
         >
           <div className="container mx-auto px-6 py-6 space-y-4">
-            {['Protocol', 'Strategies', 'Portfolio', 'Analytics'].map((item) => (
+            {[
+              { name: 'Protocol', href: '#protocol' },
+              { name: 'Strategies', href: '/strategies' },
+              { name: 'Demo', href: '/demo' },
+              { name: 'Portfolio', href: '#portfolio' },
+              { name: 'Analytics', href: '#analytics' }
+            ].map((item) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
+                key={item.name}
+                href={item.href}
                 className="block text-rgb(var(--yieldx-text-secondary)) hover:yieldx-text-electric transition-all duration-300 font-medium py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
-                {item}
+                {item.name}
               </a>
             ))}
             <button className="w-full yieldx-btn-primary">

@@ -12,6 +12,7 @@ import {
   EyeSlashIcon 
 } from '@heroicons/react/24/outline';
 import { useUserDeposits } from '@/hooks/useUserDeposits';
+import { useUserDepositsPagination } from '@/hooks/useUserDepositsPagination';
 import { useStrategies } from '@/hooks/useStrategies';
 import { useYieldProgram } from '@/hooks/useYieldProgram';
 import { useWallet } from '@solana/wallet-adapter-react';
@@ -26,10 +27,16 @@ import {
   MockPosition 
 } from '@/lib/mockData';
 import { isUsingMockData, isDemoModeEnabled } from '@/lib/config';
+import UserDepositsFiltersComponent from '@/components/filters/UserDepositsFilters';
+import { UserDepositCard } from '@/components/ui/UserDepositCard';
+import { UserDepositListItem } from '@/components/ui/UserDepositListItem';
+import { UserDepositTable } from '@/components/ui/UserDepositTable';
+import YieldPagination from '@/components/ui/YieldPagination';
 import PortfolioLineChart from '@/components/ui/PortfolioLineChart';
 import PortfolioPieChart from '@/components/ui/PortfolioPieChart';
 import PortfolioBarChart from '@/components/ui/PortfolioBarChart';
 import RewardsAreaChart from '@/components/ui/RewardsAreaChart';
+import { Grid, List, Table, ArrowUpDown, SortAsc, SortDesc, RefreshCw } from 'lucide-react';
 
 interface Position {
   id: string;
@@ -59,10 +66,38 @@ const ModernPortfolioSection: React.FC = () => {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<Position | null>(null);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshMessage, setRefreshMessage] = useState<string | null>(null);
+  
   // Use environment configuration for demo mode
   const [isDemoMode, setIsDemoMode] = useState(isUsingMockData() || isDemoModeEnabled());
   
-  // Mock data states
+  // Debug: Log configuration values
+  useEffect(() => {
+    console.log('🔧 ModernPortfolioSection Configuration:', {
+      isUsingMockData: isUsingMockData(),
+      isDemoModeEnabled: isDemoModeEnabled(),
+      isDemoMode,
+      NODE_ENV: process.env.NODE_ENV,
+      NEXT_PUBLIC_USE_MOCK_DATA: process.env.NEXT_PUBLIC_USE_MOCK_DATA,
+      NEXT_PUBLIC_ENABLE_DEMO_MODE: process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE
+    });
+  }, [isDemoMode]);
+  
+  // Keyboard shortcut for refresh (F5 or Ctrl+R)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
+        event.preventDefault();
+        handleRefresh();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
+  // Mock data states (only used in demo mode)
   const [mockStats, setMockStats] = useState<MockPortfolioStats | null>(null);
   const [mockPositions, setMockPositions] = useState<MockPosition[]>([]);
   const [isMockLoading, setIsMockLoading] = useState(false);
@@ -76,9 +111,29 @@ const ModernPortfolioSection: React.FC = () => {
   const { connected } = useWallet();
   
   // Récupérer les données depuis les hooks (données réelles)
-  const { deposits, stats, isLoading: depositsLoading, error: depositsError, refetch } = useUserDeposits();
-  const { strategies, isLoading: strategiesLoading } = useStrategies();
+  const { deposits, enrichedDeposits, stats, isLoading: depositsLoading, error: depositsError, refetch: refetchDeposits } = useUserDeposits();
+  const { strategies, isLoading: strategiesLoading, refetch: refetchStrategies } = useStrategies();
   const { redeem } = useYieldProgram();
+
+  // Hook de pagination pour les positions
+  const {
+    paginatedDeposits,
+    filteredDeposits,
+    paginationInfo,
+    sortBy,
+    sortDirection,
+    handleSortChange,
+    viewMode,
+    handleViewModeChange,
+    filters,
+    updateFilters,
+    resetFilters,
+    filterOptions,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    stats: paginationStats,
+  } = useUserDepositsPagination(enrichedDeposits || [], 12);
 
   // Load mock data when demo mode is enabled
   useEffect(() => {
@@ -210,6 +265,44 @@ const ModernPortfolioSection: React.FC = () => {
   // État de chargement global
   const isLoading = isDemoMode ? isMockLoading : (depositsLoading || strategiesLoading);
 
+  // Options de tri pour les positions
+  const sortOptions = [
+    { value: 'depositDate', label: 'Date de dépôt' },
+    { value: 'amount', label: 'Montant' },
+    { value: 'yieldAmount', label: 'Rendement' },
+    { value: 'apy', label: 'APY' },
+    { value: 'maturityDate', label: 'Date d\'échéance' },
+  ];
+
+  const handleSort = (option: string) => {
+    const newDirection = sortBy === option && sortDirection === 'asc' ? 'desc' : 'asc';
+    handleSortChange(option as any, newDirection as any);
+  };
+
+  // Gestionnaires d'actions pour les positions
+  const handlePositionAction = (deposit: any, action: 'withdraw' | 'claim' | 'view') => {
+    if (action === 'withdraw') {
+      // Convertir le deposit en Position pour compatibilité avec le modal existant
+      const position: Position = {
+        id: deposit.publicKey,
+        strategy: deposit.strategy?.name || deposit.strategyAddress.slice(0, 8),
+        token: deposit.tokenSymbol || deposit.tokenAddress.slice(0, 4).toUpperCase(),
+        deposited: parseFloat(deposit.amount),
+        currentValue: parseFloat(deposit.amount) + parseFloat(deposit.yieldAmount),
+        apy: parseFloat(deposit.apy),
+        rewards: parseFloat(deposit.yieldAmount),
+        status: deposit.isMatured ? 'Active' : 'Pending',
+        depositDate: deposit.depositDate,
+        maturityDate: deposit.maturityDate,
+        timeUntilMaturity: deposit.timeUntilMaturity,
+      };
+      setSelectedPosition(position);
+      setShowWithdrawModal(true);
+    } else if (action === 'view') {
+      alert('View Details functionality coming soon!');
+    }
+  };
+
   // Fonctions de gestion des actions
   const handleAddMore = (position: Position) => {
     // Pour l'instant, on affiche juste une alerte
@@ -253,7 +346,10 @@ const ModernPortfolioSection: React.FC = () => {
       console.log('Redeem successful:', result);
       
       // Rafraîchir les données
-      await refetch();
+      await Promise.all([
+        refetchDeposits(),
+        refetchStrategies()
+      ]);
       
       // Fermer le modal
       setShowWithdrawModal(false);
@@ -270,13 +366,45 @@ const ModernPortfolioSection: React.FC = () => {
     }
   };
 
+  // Fonction pour gérer le refresh avec feedback visuel
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    setRefreshMessage('Refreshing portfolio data...');
+    
+    try {
+      // Actualiser les dépôts et les stratégies en parallèle
+      await Promise.all([
+        refetchDeposits(),
+        refetchStrategies()
+      ]);
+      
+      setRefreshMessage('Portfolio data refreshed successfully!');
+      
+      // Effacer le message après 2 secondes
+      setTimeout(() => {
+        setRefreshMessage(null);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Refresh error:', error);
+      setRefreshMessage('Failed to refresh portfolio data');
+      
+      // Effacer le message d'erreur après 3 secondes
+      setTimeout(() => {
+        setRefreshMessage(null);
+      }, 3000);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleCancelWithdraw = () => {
     setShowWithdrawModal(false);
     setSelectedPosition(null);
   };
 
   return (
-    <section className="py-24 px-6 relative">
+    <section className="py-24 px-6 relative min-h-screen" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl"></div>
@@ -401,9 +529,40 @@ const ModernPortfolioSection: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="min-h-[700px]"
+          style={{ 
+            willChange: 'transform',
+            transform: 'translateZ(0)',
+            backfaceVisibility: 'hidden'
+          }}
         >
           {activeTab === 'overview' && (
-            <div className="space-y-8">
+            <div className="space-y-8" style={{ 
+              transform: 'translateZ(0)', 
+              backfaceVisibility: 'hidden',
+              willChange: 'transform'
+            }}>
+              {/* Overview Header with Refresh Button */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Portfolio Overview</h2>
+                  <p className="text-gray-400">Monitor your portfolio performance and analytics</p>
+                </div>
+                <button
+                  onClick={handleRefresh}
+                  disabled={isRefreshing || depositsLoading || strategiesLoading}
+                  className={`flex items-center gap-2 px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-700/50 ${
+                    (isRefreshing || depositsLoading || strategiesLoading) 
+                      ? 'text-gray-500 cursor-not-allowed' 
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  title="Refresh portfolio data"
+                >
+                  <RefreshCw className={`w-4 h-4 ${(isRefreshing || depositsLoading || strategiesLoading) ? 'animate-spin' : ''}`} />
+                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                </button>
+              </div>
+
               {/* Overview Stats Cards - Always show, with demo or real data */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div className="yieldx-card-glass p-6 rounded-xl border border-white/10">
@@ -593,7 +752,12 @@ const ModernPortfolioSection: React.FC = () => {
           )}
 
           {activeTab === 'positions' && (
-            <div className="space-y-6">
+            <div className="space-y-6 h-screen overflow-y-auto" style={{ 
+              transform: 'translateZ(0)', 
+              backfaceVisibility: 'hidden',
+              willChange: 'transform',
+              position: 'relative'
+            }}>
               {(!connected && !isDemoMode) ? (
                 <div className="yieldx-card-glass p-8 text-center">
                   <div className="w-16 h-16 yieldx-card-neon rounded-full flex items-center justify-center mx-auto mb-4">
@@ -645,7 +809,7 @@ const ModernPortfolioSection: React.FC = () => {
                     Retry
                   </button>
                 </div>
-              ) : positions.length === 0 ? (
+              ) : (deposits && deposits.length === 0) ? (
                 <div className="yieldx-card-glass p-8 text-center">
                   <div className="w-16 h-16 yieldx-card-neon rounded-full flex items-center justify-center mx-auto mb-4">
                     <ChartBarIcon className="w-8 h-8 text-rgb(var(--yieldx-electric-blue))" />
@@ -664,7 +828,11 @@ const ModernPortfolioSection: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-6 min-h-screen overflow-hidden" style={{ 
+                  transform: 'translateZ(0)', 
+                  backfaceVisibility: 'hidden',
+                  willChange: 'transform'
+                }}>
                   {/* Demo Mode Indicator */}
                   {isDemoMode && (
                     <div className="yieldx-card-glass p-4 rounded-xl border border-blue-400/20 bg-blue-500/5">
@@ -675,152 +843,180 @@ const ModernPortfolioSection: React.FC = () => {
                         <div>
                           <p className="text-blue-300 font-medium text-sm">Demo Portfolio Active</p>
                           <p className="text-blue-400/70 text-xs">
-                            Showing {mockPositions.length} fictional positions across various DeFi protocols
+                            Showing interactive positions with advanced filtering and sorting
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {positions.map((position, index) => {
-                    // Get mock position data for enhanced display
-                    const mockPos = isDemoMode ? mockPositions.find(p => p.id === position.id) : null;
-                    
-                    return (
-                      <motion.div
-                        key={position.id}
-                        className="glass-card p-6 rounded-2xl border border-white/10 hover:border-white/20 transition-all duration-300"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                      >
-                        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between space-y-4 lg:space-y-0">
-                          {/* Left: Strategy Info */}
-                          <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                              <span className="text-white font-bold">{position.token.charAt(0)}</span>
-                            </div>
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-white">{position.strategy}</h3>
-                                {/* Risk Level Badge for Demo Mode */}
-                                {mockPos && (
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${getRiskLevelColor(mockPos.riskLevel)}`}>
-                                    {mockPos.riskLevel} Risk
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-white/60 text-sm">{position.token}</p>
-                                {/* Platform Badge for Demo Mode */}
-                                {mockPos && (
-                                  <span className="text-gray-400 text-xs">• {mockPos.platform}</span>
-                                )}
-                              </div>
-                            </div>
-                            <div className={`px-3 py-1 rounded-full border text-xs font-medium ${getStatusColor(position.status)}`}>
-                              {position.status}
-                            </div>
-                          </div>
+                  {/* Filters and Controls */}
+                  <div className="space-y-4 sticky top-0 bg-black/20 backdrop-blur-sm z-10 pb-4" style={{ 
+                    willChange: 'transform',
+                    transform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden'
+                  }}>
+                    {/* Filters */}
+                    <UserDepositsFiltersComponent
+                      filters={filters}
+                      onUpdateFilters={updateFilters}
+                      onResetFilters={resetFilters}
+                      filterOptions={filterOptions}
+                      totalResults={filteredDeposits.length}
+                    />
 
-                      {/* Right: Metrics */}
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full lg:w-auto">
-                        <div className="text-center lg:text-right">
-                          <div className="text-lg font-semibold text-white">
-                            {position.deposited.toFixed(2)} {position.token}
-                          </div>
-                          <div className="text-white/50 text-xs uppercase tracking-wider">
-                            Deposited
-                          </div>
+                    {/* View Mode and Sort Controls */}
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                      {/* View Mode Selector */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-400 font-medium">View:</span>
+                        <div className="flex bg-gray-800/50 rounded-lg p-1 border border-gray-700/50">
+                          <button
+                            onClick={() => handleViewModeChange('grid')}
+                            className={`p-2 rounded-md transition-all duration-200 ${
+                              viewMode === 'grid' 
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                            }`}
+                          >
+                            <Grid className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleViewModeChange('list')}
+                            className={`p-2 rounded-md transition-all duration-200 ${
+                              viewMode === 'list' 
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                            }`}
+                          >
+                            <List className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleViewModeChange('table')}
+                            className={`p-2 rounded-md transition-all duration-200 ${
+                              viewMode === 'table' 
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
+                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                            }`}
+                          >
+                            <Table className="w-4 h-4" />
+                          </button>
                         </div>
-                        <div className="text-center lg:text-right">
-                          <div className="text-lg font-semibold text-white">
-                            {position.currentValue.toFixed(2)} {position.token}
-                          </div>
-                          <div className="text-white/50 text-xs uppercase tracking-wider">
-                            Current Value
-                          </div>
-                        </div>
-                        <div className="text-center lg:text-right">
-                          <div className="text-lg font-semibold text-green-400">
-                            {position.apy.toFixed(1)}%
-                          </div>
-                          <div className="text-white/50 text-xs uppercase tracking-wider">
-                            APY
-                          </div>
-                        </div>
-                        <div className="text-center lg:text-right">
-                          <div className="text-lg font-semibold text-purple-400">
-                            +{position.rewards.toFixed(4)} {position.token}
-                          </div>
-                          <div className="text-white/50 text-xs uppercase tracking-wider">
-                            Rewards
-                          </div>
+                      </div>
+
+                      {/* Sort Controls and Refresh */}
+                      <div className="flex items-center gap-3">
+                        {/* Refresh Button */}
+                        <button
+                          onClick={handleRefresh}
+                          disabled={isRefreshing || depositsLoading}
+                          className={`flex items-center gap-2 px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-sm font-medium transition-all duration-200 hover:bg-gray-700/50 ${
+                            (isRefreshing || depositsLoading) 
+                              ? 'text-gray-500 cursor-not-allowed' 
+                              : 'text-gray-300 hover:text-white'
+                          }`}
+                          title="Refresh positions"
+                        >
+                          <RefreshCw className={`w-4 h-4 ${(isRefreshing || depositsLoading) ? 'animate-spin' : ''}`} />
+                          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                        </button>
+                        
+                        <span className="text-sm text-gray-400 font-medium">Sort by:</span>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={sortBy}
+                            onChange={(e) => handleSortChange(e.target.value as any)}
+                            className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          >
+                            <option value="amount">Amount</option>
+                            <option value="yieldAmount">Yield Amount</option>
+                            <option value="apy">APY</option>
+                            <option value="depositDate">Deposit Date</option>
+                            <option value="maturityDate">Maturity Date</option>
+                          </select>
+                          <button
+                            onClick={() => handleSortChange(sortBy)}
+                            className="p-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200"
+                          >
+                            {sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+                          </button>
                         </div>
                       </div>
                     </div>
 
-                    {/* Additional Info */}
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-white/50">Deposit Date:</span>
-                          <span className="text-white ml-2">
-                            {formatDate(position.depositDate)}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-white/50">Maturity Date:</span>
-                          <span className="text-white ml-2">
-                            {formatDate(position.maturityDate)}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-white/50">Time Until Maturity:</span>
-                          <span className="text-white ml-2">
-                            {formatTimeRemaining(position.timeUntilMaturity)}
-                          </span>
-                        </div>
-                      </div>
+                    {/* Results Summary */}
+                    <div className="text-sm text-gray-400 flex items-center justify-between">
+                      <span>
+                        Showing {paginationInfo.startIndex + 1}-{Math.min(paginationInfo.endIndex, filteredDeposits.length)} of {filteredDeposits.length} positions
+                      </span>
+                      <span>
+                        Total Value: {formatCurrency(paginationStats.totalValue)}
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Action Buttons */}
-                    <div className="flex space-x-3 mt-6 pt-6 border-t border-white/10">
-                      {/* Add More Button - Disabled for now */}
-                      <button 
-                        className="px-4 py-2 bg-gray-600 text-gray-400 font-medium rounded-lg cursor-not-allowed transition-all duration-300 text-sm relative group"
-                        disabled
-                        title="Coming Soon"
-                      >
-                        Add More
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                          Coming Soon
+                  {/* Positions Display */}
+                  <div className="min-h-[800px] max-h-[800px] overflow-y-auto transition-all duration-300" style={{ 
+                    willChange: 'transform',
+                    transform: 'translateZ(0)',
+                    backfaceVisibility: 'hidden',
+                    position: 'relative'
+                  }}>
+                    <div className="space-y-4 h-full">
+                      {viewMode === 'grid' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-max transition-all duration-300">
+                          {paginatedDeposits.map((deposit) => (
+                            <UserDepositCard
+                              key={deposit.publicKey}
+                              deposit={deposit}
+                              onAction={handlePositionAction}
+                            />
+                          ))}
                         </div>
-                      </button>
-                      
-                      {/* Withdraw/Redeem Button */}
-                      <button 
-                        onClick={() => handleWithdraw(position)}
-                        className={`px-4 py-2 font-medium rounded-lg transition-all duration-300 text-sm ${
-                          position.timeUntilMaturity > 0
-                            ? 'bg-orange-600 hover:bg-orange-700 text-white border border-orange-500'
-                            : 'glass-card border border-white/20 text-white hover:bg-white/10'
-                        }`}
-                      >
-                        {position.timeUntilMaturity > 0 ? 'Early Redeem' : 'Withdraw'}
-                      </button>
-                      
-                      {/* View Details Button */}
-                      <button 
-                        className="px-4 py-2 text-white/70 hover:text-white transition-colors duration-300 text-sm"
-                        onClick={() => alert('View Details functionality coming soon!')}
-                      >
-                        View Details
-                      </button>
+                      )}
+
+                      {viewMode === 'list' && (
+                        <div className="space-y-4 transition-all duration-300">
+                          {paginatedDeposits.map((deposit) => (
+                            <UserDepositListItem
+                              key={deposit.publicKey}
+                              deposit={deposit}
+                              onAction={handlePositionAction}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {viewMode === 'table' && (
+                        <div className="h-full transition-all duration-300">
+                          <UserDepositTable
+                            deposits={paginatedDeposits}
+                            onAction={handlePositionAction}
+                            sortBy={sortBy}
+                            sortOrder={sortDirection}
+                            onSort={(field: string) => handleSort(field)}
+                          />
+                        </div>
+                      )}
                     </div>
-                  </motion.div>
-                    );
-                  })}
+                  </div>
+
+                  {/* Pagination */}
+                  {paginationInfo.totalPages > 1 && (
+                    <div className="flex justify-center">
+                      <YieldPagination
+                        currentPage={paginationInfo.currentPage}
+                        totalPages={paginationInfo.totalPages}
+                        totalItems={filteredDeposits.length}
+                        itemsPerPage={12}
+                        startIndex={paginationInfo.startIndex}
+                        endIndex={paginationInfo.endIndex}
+                        onPageChange={goToPage}
+                        onNextPage={goToNextPage}
+                        onPreviousPage={goToPreviousPage}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -959,6 +1155,29 @@ const ModernPortfolioSection: React.FC = () => {
             </div>
           </motion.div>
         </div>
+      )}
+      
+      {/* Notification Toast */}
+      {refreshMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className="fixed top-4 right-4 z-50 max-w-sm"
+        >
+          <div className={`p-4 rounded-lg border backdrop-blur-sm ${
+            refreshMessage.includes('success') 
+              ? 'bg-green-500/10 border-green-500/30 text-green-300'
+              : refreshMessage.includes('Failed') 
+                ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+          }`}>
+            <div className="flex items-center gap-2">
+              <RefreshCw className={`w-4 h-4 ${refreshMessage.includes('Refreshing') ? 'animate-spin' : ''}`} />
+              <span className="text-sm font-medium">{refreshMessage}</span>
+            </div>
+          </div>
+        </motion.div>
       )}
     </section>
   );

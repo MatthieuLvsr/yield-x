@@ -6,6 +6,7 @@ import ModernHeroSection from "@/components/sections/ModernHeroSection";
 import ModernMarketplaceSection from "@/components/sections/ModernMarketplaceSection";
 import ModernPortfolioSection from "@/components/sections/ModernPortfolioSection";
 import ModernStrategiesSection from "@/components/sections/ModernStrategiesSection";
+import StrategiesSection from "@/components/sections/StrategiesSection";
 import YieldProtocolOverview from "@/components/sections/YieldProtocolOverview";
 import YieldLogo from "@/components/ui/YieldLogo";
 import DataModeIndicator from "@/components/ui/DataModeIndicator";
@@ -33,7 +34,7 @@ export default function Home() {
       <div className="py-8">
         <SectionDivider variant="lightning" color="blue" />
       </div>
-      <ModernStrategiesSection />
+      <StrategiesSection />
       
       <div className="py-8">
         <SectionDivider variant="dots" color="purple" />
