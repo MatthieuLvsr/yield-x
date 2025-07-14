@@ -197,7 +197,7 @@ const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="bg-gray-800/20 border border-gray-700/30 rounded-xl p-6 overflow-hidden">
+            <div className="bg-gray-800/20 border border-gray-700/30 rounded-xl p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Filtre Token */}
                 <div className="min-w-0">
