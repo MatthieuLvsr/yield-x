@@ -30,6 +30,7 @@ pub fn redeem(ctx: Context<Redeem>, with_penalty: bool) -> Result<()> {
     let seeds = &[
         b"strategy".as_ref(),
         &strategy.token_address.to_bytes(),
+        &strategy.reward_apy.to_le_bytes(),
         &[ctx.bumps.strategy],
     ];
     token::burn(

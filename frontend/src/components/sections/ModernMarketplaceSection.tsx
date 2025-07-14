@@ -107,9 +107,9 @@ const ModernMarketplaceSection: React.FC = () => {
     <section className="relative py-32 px-6 overflow-hidden">
       {/* Animated Background */}
       <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/3 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto relative z-10">
@@ -124,11 +124,11 @@ const ModernMarketplaceSection: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
               <ArrowsRightLeftIcon className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold gradient-text">
+            <h2 className="text-4xl md:text-5xl font-bold yieldx-text-gradient">
               YT Marketplace
             </h2>
           </div>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto">
             Trade Yield Tokens seamlessly with our advanced marketplace
           </p>
         </motion.div>
@@ -140,7 +140,7 @@ const ModernMarketplaceSection: React.FC = () => {
           transition={{ duration: 0.6 }}
           className="flex justify-center mb-12"
         >
-          <div className="glass-card p-2 rounded-2xl border border-white/10 backdrop-blur-xl">
+          <div className="yieldx-card-glass p-2 rounded-2xl border border-white/10 backdrop-blur-xl">
             <div className="flex space-x-2">
               {[
                 { id: "markets", label: "Markets", icon: ChartBarIcon },
@@ -154,8 +154,8 @@ const ModernMarketplaceSection: React.FC = () => {
                   }
                   className={`flex items-center space-x-2 px-6 py-3 rounded-xl transition-all duration-300 ${
                     activeTab === tab.id
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
+                      ? "bg-gradient-to-r from-blue-500/20 to-purple-600/20 text-white shadow-lg border border-blue-500/30"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   <tab.icon className="w-5 h-5" />
@@ -282,7 +282,7 @@ const ModernMarketplaceSection: React.FC = () => {
                             setSelectedMarket(market);
                             setActiveTab("trading");
                           }}
-                          className="glass-button px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-white/10 text-white hover:from-blue-500/30 hover:to-purple-600/30 transition-all duration-300"
+                          className="glass-button px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-white/10 text-white hover:from-blue-500/20 hover:to-purple-600/20 transition-all duration-300"
                         >
                           Trade
                         </button>
@@ -395,7 +395,7 @@ const ModernMarketplaceSection: React.FC = () => {
                             onClick={() => setOrderType("market")}
                             className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
                               orderType === "market"
-                                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                                ? "bg-gradient-to-r from-blue-500/15 to-purple-600/15 text-white border border-blue-500/20"
                                 : "bg-white/5 text-white/60 hover:text-white"
                             }`}
                           >
@@ -405,7 +405,7 @@ const ModernMarketplaceSection: React.FC = () => {
                             onClick={() => setOrderType("limit")}
                             className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
                               orderType === "limit"
-                                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                                ? "bg-gradient-to-r from-blue-500/15 to-purple-600/15 text-white border border-blue-500/20"
                                 : "bg-white/5 text-white/60 hover:text-white"
                             }`}
                           >
@@ -419,7 +419,7 @@ const ModernMarketplaceSection: React.FC = () => {
                             onClick={() => setOrderSide("buy")}
                             className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
                               orderSide === "buy"
-                                ? "bg-gradient-to-r from-green-500 to-green-600 text-white"
+                                ? "bg-gradient-to-r from-green-500/20 to-green-600/20 text-white border border-green-500/30"
                                 : "bg-white/5 text-white/60 hover:text-white"
                             }`}
                           >
@@ -430,7 +430,7 @@ const ModernMarketplaceSection: React.FC = () => {
                             onClick={() => setOrderSide("sell")}
                             className={`flex-1 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
                               orderSide === "sell"
-                                ? "bg-gradient-to-r from-red-500 to-red-600 text-white"
+                                ? "bg-gradient-to-r from-red-500/20 to-red-600/20 text-white border border-red-500/30"
                                 : "bg-white/5 text-white/60 hover:text-white"
                             }`}
                           >
@@ -552,7 +552,7 @@ const ModernMarketplaceSection: React.FC = () => {
               </p>
               <button
                 onClick={() => setActiveTab("markets")}
-                className="glass-button px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-600/20 border border-white/10 text-white hover:from-blue-500/30 hover:to-purple-600/30 transition-all duration-300"
+                className="glass-button px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-white/10 text-white hover:from-blue-500/20 hover:to-purple-600/20 transition-all duration-300"
               >
                 Browse Markets
               </button>

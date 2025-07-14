@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "set NEXT_PUBLIC_USE_MOCK_DATA=false&& next dev --turbopack",
+    "dev:fake": "set NEXT_PUBLIC_USE_MOCK_DATA=true&& set NEXT_PUBLIC_ENABLE_DEMO_MODE=true&& set NEXT_PUBLIC_MOCK_DELAY=800&& next dev --turbopack",
     "build": "next build",
+    "build:fake": "set NEXT_PUBLIC_USE_MOCK_DATA=true&& next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.31.1",
+    "@coral-xyz/anchor": "^0.28.0",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
@@ -32,6 +34,8 @@
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
     "heroicons": "^2.2.0",
+    "highcharts": "^12.3.0",
+    "highcharts-react-official": "^3.2.2",
     "leva": "^0.9.35",
     "lucide-react": "^0.453.0",
     "next": "15.3.4",
