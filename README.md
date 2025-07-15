@@ -1,240 +1,163 @@
-# Yield-X Solana Program
+# Yield-X
 
-A decentralized yield farming protocol built on Solana using the Anchor framework. This program allows users to create yield strategies, deposit tokens, and earn rewards with configurable APY rates.
+A monorepo for the Yield-X project containing a Solana smart contract, API backend, and Next.js frontend.
 
-## 🚀 Features
+## Quick Start
 
-- **Strategy Creation**: Create custom yield strategies with configurable APY rates
-- **Token Deposits**: Deposit tokens into strategies to earn yield
-- **Yield Token Minting**: Automatically mint yield tokens representing user positions
-- **Redemption System**: Redeem positions with penalty calculations for early withdrawal
-- **PDA-based Architecture**: Secure account management using Program Derived Addresses
-- **SPL Token Integration**: Full compatibility with Solana's token standard
-
-## 📋 Prerequisites
-
-### System Requirements
-
-- **Node.js**: v20.18.0 or higher
-- **Rust**: Latest stable version
-- **Solana CLI**: v2.2.18 or higher
-- **Anchor CLI**: v0.31.1 or higher
-
-### Initial Setup & CLI Upgrades
-
-We recommend following these steps to ensure your development environment is up-to-date:
-
-- Install/Upgrade Solana CLI
-- Install/Upgrade Rust
-- Install/Upgrade Anchor CLI
-- Configure Solana for Local Development
-
-You can find detailed instructions in the [Solana documentation](https://solana.com/docs/intro/installation).
-
-## 🛠️ Project Setup
-
-### 1. Clone and Install Dependencies
+Install dependencies and start all services:
 
 ```bash
-# Clone the repository
-git clone git@github.com:MatthieuLvsr/yield-x.git
-
-# Navigate to project directory
-cd yield-x
-
-# Install Node.js dependencies
-npm install
+bun install
+bun dev
 ```
 
-> **Note**: This project is configured to use npm (see `Anchor.toml`). If you prefer yarn for example, you can update the `package_manager` setting in `Anchor.toml` to `"yarn"` and use `yarn install` instead.
+This will start:
+- API server with Prisma Studio
+- Frontend development server
+- Database migrations
 
-### 2. Build the Program
+## Project Structure
+
+- `apps/contract` - Solana smart contract (Anchor framework)
+- `apps/api` - Backend API (Elysia + Prisma)
+- `apps/frontend` - Web interface (Next.js + React)
+
+## apps/contract
+
+Solana smart contract built with Anchor framework.
+
+### Prerequisites
+- [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
+- [Anchor CLI](https://www.anchor-lang.com/docs/installation)
+
+### Local Development
 
 ```bash
-# Build the Anchor program
+cd apps/contract
+
+# Start local Solana validator
+solana-test-validator
+
+# Set cluster to localhost
+solana config set -ul
+
+# Build and test
 anchor build
-```
+anchor test --skip-local-validator
 
-## 🧪 Running Tests
-
-### Method 1: Using Anchor Test (Recommended)
-
-```bash
-# Run the complete test suite with automatic validator management
-anchor test
-```
-
-This automatically:
-1. Starts a local test validator
-2. Deploys the program
-3. Runs all tests
-4. Stops the validator
-
-### Method 2: Manual Testing with Local Validator
-
-#### Step 1: Start Local Validator
-
-```bash
-# Start the validator in background
-solana-test-validator --reset --quiet &
-```
-
-#### Step 2: Deploy the Program
-
-```bash
-# Deploy to local validator
+# Deploy locally
 anchor deploy
 ```
 
-#### Step 3: Run Tests
+### Deploy to Devnet
 
-```bash
-# Set environment variables and run tests
-ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 \
-ANCHOR_WALLET=~/.config/solana/id.json \
-npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts
+1. Update `Anchor.toml`:
+```toml
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/id.json"
 ```
 
-#### Step 4: Stop Validator
-
+2. Rebuild and deploy:
 ```bash
-# Stop the validator when done
-pkill solana-test-validator
-```
-
-### Test Coverage
-
-The test suite includes:
-
-1. **Strategy Creation Test**
-
-   - Creates a new yield strategy with custom APY
-   - Verifies strategy account initialization
-   - Tests token mint creation for yield tokens
-
-2. **Complete Deposit/Redeem Flow Test**
-
-   - Creates a strategy
-   - Mints test tokens to user
-   - Performs token deposit
-   - Mints yield tokens to user
-   - Redeems position with penalty calculation
-   - Verifies token balance changes
-
-3. **Program Information Display**
-   - Shows program capabilities and status
-
-## 🚀 Deployment
-
-### Local Development (Localhost)
-
-```bash
-# Configure for localhost
-solana config set --url localhost
-
-# Start validator
-solana-test-validator --reset
-
-# Deploy
+anchor build
 anchor deploy
 ```
 
-### Devnet Deployment
+Available scripts:
+- `bun run build` - Build the contract
+- `bun run test` - Run tests with local validator
+- `bun run test:unit` - Run tests without validator
+- `bun run start:validator` - Start Solana test validator
+- `bun run stop:validator` - Stop Solana test validator
+
+## apps/api
+
+Backend API built with Elysia and Prisma for database management.
+
+### Setup
 
 ```bash
-# Configure for devnet
-solana config set --url devnet
+cd apps/api
 
-# Airdrop SOL for deployment (if needed)
-solana airdrop 5
+# Run database migrations
+bun run db:migrate
 
-# Deploy to devnet
-anchor deploy --provider.cluster devnet
+# Seed the database (optional)
+bun run seed
+
+# Start development server
+bun run dev
 ```
 
-### Mainnet Deployment
+Available scripts:
+- `bun run dev` - Start development server with auto-reload
+- `bun run db:migrate` - Run database migrations
+- `bun run db:reset` - Reset database
+- `bun run db:generate` - Generate Prisma client
+- `bun run seed` - Seed database with sample data
+
+The API includes:
+- OpenAPI documentation via Swagger
+- CORS support
+- OpenTelemetry integration
+
+## apps/frontend
+
+Next.js frontend with React 19, Tailwind CSS, and Solana wallet integration.
+
+### Setup
 
 ```bash
-# Configure for mainnet
-solana config set --url mainnet-beta
+cd apps/frontend
 
-# Ensure you have sufficient SOL for deployment
-solana balance
-
-# Deploy to mainnet (use with caution)
-anchor deploy --provider.cluster mainnet-beta
+# Start development server
+bun run dev
 ```
 
-## 🔧 Program Instructions
+### Environment Modes
 
-### 1. Create Strategy
+**Development (real data):**
+```bash
+bun run dev
+```
 
-Creates a new yield strategy with specified token and APY.
+**Demo mode (mock data):**
+```bash
+bun run dev:fake
+```
 
-**Parameters:**
+Available scripts:
+- `bun run dev` - Development server with real data
+- `bun run dev:fake` - Development server with mock data
+- `bun run build` - Production build
+- `bun run build:fake` - Production build with mock data
+- `bun run start` - Start production server
 
-- `token_address`: Token mint address for the strategy
-- `reward_apy`: Annual Percentage Yield (in basis points, e.g., 1000 = 10%)
+Features:
+- Solana wallet integration
+- 3D visualizations with Three.js
+- Interactive charts with Highcharts
+- Responsive design with Tailwind CSS
+- Component library with Radix UI
 
-### 2. Deposit
+## Development
 
-Deposits tokens into a strategy to earn yield.
+### Code Quality
 
-**Parameters:**
-
-- `amount`: Amount of tokens to deposit
-
-**Process:**
-
-- Transfers user tokens to strategy account
-- Mints equivalent yield tokens to user
-- Creates deposit record with maturity date
-
-### 3. Redeem
-
-Redeems a position from a strategy.
-
-**Parameters:**
-
-- `with_penalty`: Boolean indicating if penalty should be applied for early withdrawal
-
-**Process:**
-
-- Burns user's yield tokens
-- Transfers tokens back to user (minus penalty if applicable)
-- Closes deposit account
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-1. **Port 8899 already in use**
-
-   ```bash
-   # Stop any running validator
-   pkill solana-test-validator
-   ```
-
-2. **Program ID mismatch**
-
-   ```bash
-   # Rebuild and redeploy
-   anchor build
-   anchor deploy
-   ```
-
-### Useful Commands
+The project uses Ultracite for formatting and linting:
 
 ```bash
-# Check validator status
-solana-test-validator --help
-
-# View program logs
-solana logs
-
-# Check account information
-solana account <ACCOUNT_ADDRESS>
-
-# View program information
-anchor idl fetch <PROGRAM_ID>
+bun run format
 ```
+
+### Git Hooks
+
+Lefthook is configured for pre-commit hooks to ensure code quality.
+
+## Requirements
+
+- [Bun](https://bun.sh/) - JavaScript runtime and package manager
+- [Node.js](https://nodejs.org/) - For compatibility
+- [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools) - For contract development
+- [Anchor](https://www.anchor-lang.com/docs/installation) - Solana framework

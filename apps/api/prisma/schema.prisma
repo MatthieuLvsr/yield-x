@@ -1,0 +1,17 @@
+generator client {
+  provider        = "prisma-client"
+  previewFeatures = ["queryCompiler", "driverAdapters"]
+  output          = "../generated/prisma"
+  moduleFormat    = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Stats {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
