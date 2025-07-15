@@ -404,7 +404,7 @@ const ModernPortfolioSection: React.FC = () => {
   };
 
   return (
-    <section className="py-24 px-6 relative min-h-screen" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
+    <section className="py-24 px-6 relative min-h-screen" id="portfolio" style={{ transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}>
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl"></div>
@@ -925,7 +925,7 @@ const ModernPortfolioSection: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <select
                             value={sortBy}
-                            onChange={(e) => handleSortChange(e.target.value as any)}
+                            onChange={(e) => handleSortChange(e.target.value as any, sortDirection)}
                             className="bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                           >
                             <option value="amount">Amount</option>
@@ -935,7 +935,7 @@ const ModernPortfolioSection: React.FC = () => {
                             <option value="maturityDate">Maturity Date</option>
                           </select>
                           <button
-                            onClick={() => handleSortChange(sortBy)}
+                            onClick={() => handleSortChange(sortBy, sortDirection === 'asc' ? 'desc' : 'asc')}
                             className="p-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-gray-400 hover:text-white hover:bg-gray-700/50 transition-all duration-200"
                           >
                             {sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}

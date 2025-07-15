@@ -4,9 +4,13 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import YieldLogo from '@/components/ui/YieldLogo';
 import WalletButton from '@/components/ui/WalletButton';
+import { useSmoothScroll } from '@/hooks/useNavigation';
 
 const ModernHeader: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Activer le smooth scrolling
+  useSmoothScroll();
 
   return (
     <header className="fixed top-0 w-full z-50 yieldx-card-glass border-b border-rgb(var(--yieldx-border-primary))">
@@ -17,16 +21,16 @@ const ModernHeader: React.FC = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <YieldLogo variant="full" size="xl" />
+          <YieldLogo variant="full" size="md" />
         </motion.div>
 
         {/* Navigation Desktop */}
         <nav className="hidden md:flex items-center space-x-10">
           {[
             { name: 'Protocol', href: '#protocol' },
-            { name: 'Strategies', href: '/strategies' },
-            { name: 'Demo', href: '/demo' },
+            { name: 'Strategies', href: '#strategies' },
             { name: 'Portfolio', href: '#portfolio' },
+            { name: 'Marketplace', href: '#marketplace' },
             { name: 'Analytics', href: '#analytics' }
           ].map((item, index) => (
             <motion.a
@@ -77,9 +81,9 @@ const ModernHeader: React.FC = () => {
           <div className="container mx-auto px-6 py-6 space-y-4">
             {[
               { name: 'Protocol', href: '#protocol' },
-              { name: 'Strategies', href: '/strategies' },
-              { name: 'Demo', href: '/demo' },
+              { name: 'Strategies', href: '#strategies' },
               { name: 'Portfolio', href: '#portfolio' },
+              { name: 'Marketplace', href: '#marketplace' },
               { name: 'Analytics', href: '#analytics' }
             ].map((item) => (
               <a

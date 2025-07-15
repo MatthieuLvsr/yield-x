@@ -8,10 +8,13 @@ import ModernPortfolioSection from "@/components/sections/ModernPortfolioSection
 import ModernStrategiesSection from "@/components/sections/ModernStrategiesSection";
 import StrategiesSection from "@/components/sections/StrategiesSection";
 import YieldProtocolOverview from "@/components/sections/YieldProtocolOverview";
+import AnalyticsSection from "@/components/sections/AnalyticsSection";
 import YieldLogo from "@/components/ui/YieldLogo";
 import DataModeIndicator from "@/components/ui/DataModeIndicator";
 import DynamicBackground from "@/components/ui/DynamicBackground";
 import SectionDivider from "@/components/ui/SectionDivider";
+import SocialLinks from "@/components/ui/SocialLinks";
+import { SOCIAL_LINKS } from "@/lib/constants";
 
 export default function Home() {
   return (
@@ -21,7 +24,7 @@ export default function Home() {
       <ModernHeader />
       
       {/* Hero Section avec padding-top ajusté pour le header plus grand */}
-      <div className="pt-24">
+      <div className="pt-10">
         <ModernHeroSection />
       </div>
       
@@ -46,6 +49,11 @@ export default function Home() {
       </div>
       <ModernMarketplaceSection />
 
+      <div className="py-8">
+        <SectionDivider variant="wave" color="gradient" />
+      </div>
+      <AnalyticsSection />
+
       {/* Cyberpunk Footer avec plus d'espacement */}
       <footer className="relative py-24 px-6 mt-16" id="footer">
         {/* Background avec orbes cyberpunk */}
@@ -66,22 +74,12 @@ export default function Home() {
               The next generation of yield optimization on Solana blockchain
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-              {[
-                { name: "Documentation", href: "#" },
-                { name: "GitHub", href: "#" },
-                { name: "Discord", href: "#" },
-                { name: "Twitter", href: "#" }
-              ].map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-rgb(var(--yieldx-text-tertiary)) hover:yieldx-text-electric transition-all duration-300 font-medium hover:scale-105 py-2"
-                >
-                  {link.name}
-                </a>
-              ))}
-            </div>
+            <SocialLinks 
+              variant="inline" 
+              layout="grid" 
+              platforms={['docs', 'github', 'twitter', 'discord']}
+              className="mb-12"
+            />
 
             <div className="pt-10 border-t border-rgb(var(--yieldx-border-primary))">
               <p className="text-rgb(var(--yieldx-text-tertiary))">

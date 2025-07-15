@@ -21,7 +21,7 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
   strategies,
   isLoading = false,
   onStrategySelect,
-  itemsPerPage = 9,
+  itemsPerPage = 6,
 }) => {
   const {
     paginatedStrategies,

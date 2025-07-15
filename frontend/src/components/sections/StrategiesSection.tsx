@@ -77,7 +77,7 @@ const StrategiesSection: React.FC = () => {
           strategies={strategies}
           isLoading={isLoading}
           onStrategySelect={handleStrategySelect}
-          itemsPerPage={9}
+          itemsPerPage={6}
         />
 
         {/* Deposit Modal */}

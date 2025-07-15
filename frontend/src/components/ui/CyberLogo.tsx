@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 
 interface CyberLogoProps {
   variant?: 'full' | 'icon' | 'text';
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'hero';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'hero' | 'full';
   animated?: boolean;
   glowEffect?: boolean;
   className?: string;
@@ -28,6 +28,7 @@ const CyberLogo: React.FC<CyberLogoProps> = ({
     '2xl': { width: 96, height: 96, textSize: 'text-4xl', spacing: 'space-x-5' },
     '3xl': { width: 128, height: 128, textSize: 'text-5xl', spacing: 'space-x-6' },
     hero: { width: 160, height: 160, textSize: 'text-6xl', spacing: 'space-x-8' },
+    full: { width: 300, height: 300, textSize: 'text-7xl', spacing: 'space-x-2' },
   };
 
   const { width, height, textSize, spacing } = sizeConfig[size];
@@ -37,7 +38,7 @@ const CyberLogo: React.FC<CyberLogoProps> = ({
       <div className="relative">
         <Image
           src="/yield-x-logo.png"
-          alt="Yield-X"
+          alt="YIELD-X"
           width={width}
           height={height}
           className={`
@@ -65,12 +66,12 @@ const CyberLogo: React.FC<CyberLogoProps> = ({
       )}
 
       {/* Corner accents */}
-      {size === 'hero' || size === '3xl' || size === '2xl' ? (
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-cyan-400" />
-          <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-blue-400" />
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-teal-400" />
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-green-400" />
+      {size === 'hero' || size === '3xl' || size === '2xl' || size === 'full' ? (
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+          <div className="absolute top-[-18px] left-[-18px] w-5 h-5 border-l-2 border-t-2 border-cyan-400" />
+          <div className="absolute top-[-18px] right-[-18px] w-5 h-5 border-r-2 border-t-2 border-blue-400" />
+          <div className="absolute bottom-[-18px] left-[-18px] w-5 h-5 border-l-2 border-b-2 border-teal-400" />
+          <div className="absolute bottom-[-18px] right-[-18px] w-5 h-5 border-r-2 border-b-2 border-green-400" />
         </div>
       ) : null}
     </div>
@@ -82,7 +83,7 @@ const CyberLogo: React.FC<CyberLogoProps> = ({
       ${animated ? 'hover:scale-105 transition-transform duration-300' : ''}
       ${glowEffect ? 'hover:drop-shadow-lg' : ''}
     `}>
-      Yield-X
+      YIELD-X
     </span>
   );
 

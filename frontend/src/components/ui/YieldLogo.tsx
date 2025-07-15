@@ -50,7 +50,7 @@ const YieldLogo: React.FC<YieldLogoProps> = ({
       case 'text':
         return (
           <span className={`font-bold yieldx-text-gradient ${textSize} ${className}`}>
-            Yield-X
+            YIELD-X
           </span>
         );
       
@@ -71,7 +71,7 @@ const YieldLogo: React.FC<YieldLogoProps> = ({
               )}
             </div>
             <span className={`font-bold yieldx-text-gradient ${textSize}`}>
-              Yield-X
+              YIELD-X
             </span>
           </div>
         );
