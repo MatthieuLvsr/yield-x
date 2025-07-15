@@ -1,45 +1,52 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Clock, 
-  DollarSign, 
-  TrendingUp, 
-  Calendar, 
-  AlertCircle, 
-  CheckCircle, 
-  PauseCircle, 
-  ExternalLink,
-  X,
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+  AlertCircle,
   AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  ExternalLink,
+  PauseCircle,
   Sparkles,
   Target,
-  Zap
+  TrendingUp,
+  X,
+  Zap,
 } from 'lucide-react';
-import { 
-  ExclamationTriangleIcon, 
-  CheckCircleIcon 
-} from '@heroicons/react/24/outline';
+import type React from 'react';
+import { useState } from 'react';
 import { UserDeposit } from '@/hooks/useUserDeposits';
-import { 
-  EnrichedUserDeposit, 
-  getDisplayAmount, 
-  getDisplayYieldAmount, 
-  getDisplayAmountNumeric, 
-  getDisplayYieldAmountNumeric 
+import {
+  type EnrichedUserDeposit,
+  getDisplayAmount,
+  getDisplayAmountNumeric,
+  getDisplayYieldAmount,
+  getDisplayYieldAmountNumeric,
 } from '@/lib/depositUtils';
 import { formatCurrency, formatTimeRemaining } from '@/lib/formatters';
 
 interface UserDepositCardProps {
   deposit: EnrichedUserDeposit;
-  onAction?: (deposit: EnrichedUserDeposit, action: 'withdraw' | 'claim' | 'view') => void;
+  onAction?: (
+    deposit: EnrichedUserDeposit,
+    action: 'withdraw' | 'claim' | 'view'
+  ) => void;
 }
 
-export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAction }) => {
+export const UserDepositCard: React.FC<UserDepositCardProps> = ({
+  deposit,
+  onAction,
+}) => {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
-  
+
   // Déterminer le statut basé sur les propriétés disponibles
   const getStatus = () => {
     if (deposit.isMatured) return 'Matured';
@@ -51,19 +58,27 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Active': return 'text-blue-300 bg-blue-500/10 border-blue-500/20 shadow-lg shadow-blue-500/10';
-      case 'Pending': return 'text-yellow-300 bg-yellow-500/10 border-yellow-500/20 shadow-lg shadow-yellow-500/10';
-      case 'Matured': return 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 shadow-lg shadow-emerald-500/10';
-      default: return 'text-gray-300 bg-gray-500/10 border-gray-500/20';
+      case 'Active':
+        return 'text-blue-300 bg-blue-500/10 border-blue-500/20 shadow-lg shadow-blue-500/10';
+      case 'Pending':
+        return 'text-yellow-300 bg-yellow-500/10 border-yellow-500/20 shadow-lg shadow-yellow-500/10';
+      case 'Matured':
+        return 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 shadow-lg shadow-emerald-500/10';
+      default:
+        return 'text-gray-300 bg-gray-500/10 border-gray-500/20';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'Active': return <Zap className="w-3 h-3" />;
-      case 'Pending': return <Clock className="w-3 h-3" />;
-      case 'Matured': return <Sparkles className="w-3 h-3" />;
-      default: return <PauseCircle className="w-3 h-3" />;
+      case 'Active':
+        return <Zap className="h-3 w-3" />;
+      case 'Pending':
+        return <Clock className="h-3 w-3" />;
+      case 'Matured':
+        return <Sparkles className="h-3 w-3" />;
+      default:
+        return <PauseCircle className="h-3 w-3" />;
     }
   };
 
@@ -72,14 +87,14 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
     const maturityDate = new Date(deposit.maturityDate);
     const diffTime = maturityDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays <= 0) return 'Matured';
     if (diffDays === 1) return '1 day';
     if (diffDays < 30) return `${diffDays} days`;
-    
+
     const months = Math.floor(diffDays / 30);
     const remainingDays = diffDays % 30;
-    return months === 1 
+    return months === 1
       ? `1 month${remainingDays > 0 ? ` ${remainingDays}d` : ''}`
       : `${months} months${remainingDays > 0 ? ` ${remainingDays}d` : ''}`;
   };
@@ -88,16 +103,18 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
     const depositDate = new Date(deposit.depositDate);
     const maturityDate = new Date(deposit.maturityDate);
     const now = new Date();
-    
+
     const totalDuration = maturityDate.getTime() - depositDate.getTime();
     const elapsed = now.getTime() - depositDate.getTime();
-    
+
     return Math.min(Math.max((elapsed / totalDuration) * 100, 0), 100);
   };
 
   // Extraire le nom du token depuis l'adresse (pour l'affichage)
   const getTokenSymbol = () => {
-    return deposit.tokenSymbol || deposit.tokenAddress.slice(0, 4).toUpperCase();
+    return (
+      deposit.tokenSymbol || deposit.tokenAddress.slice(0, 4).toUpperCase()
+    );
   };
 
   const formatCurrency = (amount: number) => {
@@ -105,7 +122,7 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
@@ -119,10 +136,12 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
     const depositTimestamp = new Date(deposit.depositDate).getTime() / 1000;
     const elapsed = Math.max(0, now - depositTimestamp);
     const secondsInYear = 31_536_000;
-    
+
     // Calcul identique au smart contract en utilisant le montant d'affichage
     const displayAmount = getDisplayAmountNumeric(deposit);
-    const yieldAmount = (displayAmount * parseFloat(deposit.apy) * elapsed) / (100 * secondsInYear);
+    const yieldAmount =
+      (displayAmount * Number.parseFloat(deposit.apy) * elapsed) /
+      (100 * secondsInYear);
     return yieldAmount;
   };
 
@@ -147,8 +166,8 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
   };
 
   const getWithdrawButtonColor = () => {
-    return deposit.isMatured 
-      ? 'bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30' 
+    return deposit.isMatured
+      ? 'bg-green-500/20 border-green-500/30 text-green-400 hover:bg-green-500/30'
       : 'bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30';
   };
 
@@ -159,45 +178,47 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
   return (
     <>
       <motion.div
+        className="group relative overflow-hidden rounded-2xl border border-gray-800/50 bg-gradient-to-br from-gray-900/90 to-black/90 p-6 shadow-2xl backdrop-blur-2xl transition-all duration-500 hover:border-blue-500/40"
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         whileHover={{ scale: 1.02, y: -8 }}
         whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="relative bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-2xl border border-gray-800/50 rounded-2xl p-6 hover:border-blue-500/40 transition-all duration-500 group overflow-hidden shadow-2xl"
       >
         {/* Animated background gradients */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/3 to-purple-600/3 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/3 to-purple-600/3 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
         {/* Subtle animated glow */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-        
+        <div className="-inset-1 -z-10 absolute rounded-2xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-0 blur-sm transition-opacity duration-500 group-hover:opacity-100" />
+
         {/* Content */}
         <div className="relative z-10 space-y-6">
           {/* Header with enhanced design */}
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/20 group-hover:shadow-blue-500/30 transition-all duration-300">
-                  <span className="text-white font-bold text-sm">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shadow-2xl shadow-blue-500/20 transition-all duration-300 group-hover:shadow-blue-500/30">
+                  <span className="font-bold text-sm text-white">
                     {getTokenSymbol()}
                   </span>
                 </div>
-                <div className="absolute -inset-2 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center">
-                  <Target className="w-3 h-3 text-white" />
+                <div className="-inset-2 -z-10 absolute rounded-2xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 opacity-0 blur-md transition-opacity duration-300 group-hover:opacity-100" />
+                <div className="-top-1 -right-1 absolute flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600">
+                  <Target className="h-3 w-3 text-white" />
                 </div>
               </div>
               <div className="space-y-1">
-                <h3 className="text-white font-semibold text-lg tracking-tight">
+                <h3 className="font-semibold text-lg text-white tracking-tight">
                   Position #{deposit.strategyAddress.slice(0, 8)}
                 </h3>
-                <p className="text-gray-400 text-sm flex items-center gap-1.5">
-                  <DollarSign className="w-3 h-3" />
+                <p className="flex items-center gap-1.5 text-gray-400 text-sm">
+                  <DollarSign className="h-3 w-3" />
                   {getTokenSymbol()} Strategy
                 </p>
               </div>
             </div>
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium border backdrop-blur-sm ${getStatusColor(status)}`}>
+            <div
+              className={`flex items-center gap-2 rounded-full border px-4 py-2 font-medium text-xs backdrop-blur-sm ${getStatusColor(status)}`}
+            >
               {getStatusIcon(status)}
               <span>{status}</span>
             </div>
@@ -205,19 +226,23 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
 
           {/* Main stats with enhanced visual hierarchy */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-gray-400 text-xs mb-2">
-                <DollarSign className="w-3 h-3" />
+            <div className="rounded-xl border border-gray-700/50 bg-gray-800/30 p-4 backdrop-blur-sm">
+              <div className="mb-2 flex items-center gap-2 text-gray-400 text-xs">
+                <DollarSign className="h-3 w-3" />
                 <span>Deposited</span>
               </div>
-              <p className="text-white font-semibold text-xl">{getDisplayAmount(deposit)}</p>
+              <p className="font-semibold text-white text-xl">
+                {getDisplayAmount(deposit)}
+              </p>
             </div>
-            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
-              <div className="flex items-center gap-2 text-gray-400 text-xs mb-2">
-                <TrendingUp className="w-3 h-3" />
+            <div className="rounded-xl border border-gray-700/50 bg-gray-800/30 p-4 backdrop-blur-sm">
+              <div className="mb-2 flex items-center gap-2 text-gray-400 text-xs">
+                <TrendingUp className="h-3 w-3" />
                 <span>Current Yield</span>
               </div>
-              <p className="text-emerald-400 font-semibold text-xl">{getDisplayYieldAmount(deposit)}</p>
+              <p className="font-semibold text-emerald-400 text-xl">
+                {getDisplayYieldAmount(deposit)}
+              </p>
             </div>
           </div>
 
@@ -225,40 +250,46 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-400 text-xs">
-                <Sparkles className="w-3 h-3" />
+                <Sparkles className="h-3 w-3" />
                 <span>APY</span>
               </div>
               <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  {formatPercentage(parseFloat(deposit.apy))}
+                <p className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text font-bold text-2xl text-transparent">
+                  {formatPercentage(Number.parseFloat(deposit.apy))}
                 </p>
               </div>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-400 text-xs">
-                <Clock className="w-3 h-3" />
+                <Clock className="h-3 w-3" />
                 <span>Time to Maturity</span>
               </div>
-              <p className="text-white font-semibold text-lg">{timeUntilMaturity()}</p>
+              <p className="font-semibold text-lg text-white">
+                {timeUntilMaturity()}
+              </p>
             </div>
           </div>
 
           {/* Enhanced progress bar */}
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400 font-medium">Progress</span>
-              <span className="text-sm text-gray-400 font-medium">{progressPercentage().toFixed(1)}%</span>
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-gray-400 text-sm">
+                Progress
+              </span>
+              <span className="font-medium text-gray-400 text-sm">
+                {progressPercentage().toFixed(1)}%
+              </span>
             </div>
             <div className="relative">
-              <div className="w-full bg-gray-800/50 rounded-full h-3 overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
+              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-800/50">
+                <motion.div
                   animate={{ width: `${progressPercentage()}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 h-3 rounded-full shadow-lg shadow-blue-500/20"
+                  className="h-3 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-blue-500/20 shadow-lg"
+                  initial={{ width: 0 }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-sm" />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 blur-sm" />
             </div>
           </div>
 
@@ -266,37 +297,41 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-400 text-xs">
-                <Calendar className="w-3 h-3" />
+                <Calendar className="h-3 w-3" />
                 <span>Deposit Date</span>
               </div>
-              <p className="text-white font-medium text-sm">{new Date(deposit.depositDate).toLocaleDateString()}</p>
+              <p className="font-medium text-sm text-white">
+                {new Date(deposit.depositDate).toLocaleDateString()}
+              </p>
             </div>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gray-400 text-xs">
-                <Calendar className="w-3 h-3" />
+                <Calendar className="h-3 w-3" />
                 <span>Maturity Date</span>
               </div>
-              <p className="text-white font-medium text-sm">{new Date(deposit.maturityDate).toLocaleDateString()}</p>
+              <p className="font-medium text-sm text-white">
+                {new Date(deposit.maturityDate).toLocaleDateString()}
+              </p>
             </div>
           </div>
 
           {/* Enhanced action buttons */}
-          <div className="flex gap-3 pt-4 border-t border-gray-700/50">
+          <div className="flex gap-3 border-gray-700/50 border-t pt-4">
             <button
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-700/50 bg-gray-800/40 px-4 py-3 font-medium text-gray-300 text-sm backdrop-blur-sm transition-all duration-300 hover:border-gray-600/50 hover:bg-gray-800/60 hover:text-white"
               onClick={() => onAction?.(deposit, 'view')}
-              className="flex-1 px-4 py-3 bg-gray-800/40 border border-gray-700/50 rounded-xl text-gray-300 hover:text-white hover:border-gray-600/50 hover:bg-gray-800/60 transition-all duration-300 text-sm font-medium flex items-center justify-center gap-2 backdrop-blur-sm"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="h-4 w-4" />
               View Details
             </button>
             {(status === 'Active' || status === 'Matured') && (
               <button
-                onClick={handleWithdraw}
-                className={`flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 backdrop-blur-sm ${
-                  deposit.isMatured 
-                    ? 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/30 hover:border-emerald-500/50 shadow-lg shadow-emerald-500/10' 
-                    : 'bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 hover:border-red-500/50 shadow-lg shadow-red-500/10'
+                className={`flex-1 rounded-xl px-4 py-3 font-medium text-sm backdrop-blur-sm transition-all duration-300 ${
+                  deposit.isMatured
+                    ? 'border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 shadow-emerald-500/10 shadow-lg hover:border-emerald-500/50 hover:bg-emerald-500/30'
+                    : 'border border-red-500/30 bg-red-500/20 text-red-400 shadow-lg shadow-red-500/10 hover:border-red-500/50 hover:bg-red-500/30'
                 }`}
+                onClick={handleWithdraw}
               >
                 {getWithdrawButtonText()}
               </button>
@@ -309,62 +344,74 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
       <AnimatePresence>
         {showWithdrawModal && (
           <motion.div
-            initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="w-full max-w-md overflow-hidden rounded-2xl border border-gray-800/50 bg-gray-900/95 shadow-2xl backdrop-blur-xl"
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             >
               {/* Modal Header */}
               <div className="relative p-8 pb-6">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-600/5" />
                 <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-2xl font-bold text-white">
-                      {!deposit.isMatured ? 'Early Redemption' : 'Withdraw Position'}
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="font-bold text-2xl text-white">
+                      {deposit.isMatured
+                        ? 'Withdraw Position'
+                        : 'Early Redemption'}
                     </h3>
                     <button
+                      className="rounded-xl p-2 transition-colors hover:bg-gray-800/50"
                       onClick={handleCancelWithdraw}
-                      className="p-2 hover:bg-gray-800/50 rounded-xl transition-colors"
                     >
-                      <X className="w-5 h-5 text-gray-400" />
+                      <X className="h-5 w-5 text-gray-400" />
                     </button>
                   </div>
-                  
-                  {!deposit.isMatured ? (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-                          <AlertTriangle className="w-5 h-5 text-red-400" />
+
+                  {deposit.isMatured ? (
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4">
+                      <div className="mb-3 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/20">
+                          <CheckCircle className="h-5 w-5 text-emerald-400" />
                         </div>
                         <div>
-                          <h4 className="text-red-300 font-semibold">Penalty Warning</h4>
-                          <p className="text-red-200/80 text-sm">10% penalty applies</p>
+                          <h4 className="font-semibold text-emerald-300">
+                            Position Matured
+                          </h4>
+                          <p className="text-emerald-200/80 text-sm">
+                            No penalties apply
+                          </p>
                         </div>
                       </div>
                       <p className="text-gray-200 text-sm leading-relaxed">
-                        Your position has not reached maturity. Early redemption will result in a 10% penalty on the total amount.
+                        Your position has reached maturity. You can withdraw
+                        without any penalties.
                       </p>
                     </div>
                   ) : (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                          <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4">
+                      <div className="mb-3 flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/20">
+                          <AlertTriangle className="h-5 w-5 text-red-400" />
                         </div>
                         <div>
-                          <h4 className="text-emerald-300 font-semibold">Position Matured</h4>
-                          <p className="text-emerald-200/80 text-sm">No penalties apply</p>
+                          <h4 className="font-semibold text-red-300">
+                            Penalty Warning
+                          </h4>
+                          <p className="text-red-200/80 text-sm">
+                            10% penalty applies
+                          </p>
                         </div>
                       </div>
                       <p className="text-gray-200 text-sm leading-relaxed">
-                        Your position has reached maturity. You can withdraw without any penalties.
+                        Your position has not reached maturity. Early redemption
+                        will result in a 10% penalty on the total amount.
                       </p>
                     </div>
                   )}
@@ -373,47 +420,74 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
 
               {/* Modal Content */}
               <div className="px-8 pb-8">
-                <div className="bg-gray-800/40 border border-gray-700/50 rounded-xl p-5 backdrop-blur-sm">
-                  <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
+                <div className="rounded-xl border border-gray-700/50 bg-gray-800/40 p-5 backdrop-blur-sm">
+                  <h4 className="mb-4 flex items-center gap-2 font-semibold text-white">
+                    <DollarSign className="h-4 w-4" />
                     Withdrawal Summary
                   </h4>
-                  
+
                   {(() => {
                     const currentYield = calculateYieldFromTime(deposit);
-                    const totalBeforePenalty = parseFloat(deposit.amount) + currentYield;
-                    const penalty = !deposit.isMatured ? totalBeforePenalty * 0.1 : 0;
+                    const totalBeforePenalty =
+                      Number.parseFloat(deposit.amount) + currentYield;
+                    const penalty = deposit.isMatured
+                      ? 0
+                      : totalBeforePenalty * 0.1;
                     const finalAmount = totalBeforePenalty - penalty;
-                    
+
                     return (
                       <div className="space-y-3 text-sm">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-300">Original Amount:</span>
-                          <span className="text-white font-medium">{formatCurrency(parseFloat(deposit.amount))}</span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-300">
+                            Original Amount:
+                          </span>
+                          <span className="font-medium text-white">
+                            {formatCurrency(Number.parseFloat(deposit.amount))}
+                          </span>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-300">Time-based Yield:</span>
-                          <span className="text-emerald-400 font-medium">+{formatCurrency(currentYield)}</span>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-300">
+                            Time-based Yield:
+                          </span>
+                          <span className="font-medium text-emerald-400">
+                            +{formatCurrency(currentYield)}
+                          </span>
                         </div>
                         {!deposit.isMatured && (
                           <>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-300">Total Before Penalty:</span>
-                              <span className="text-white">{formatCurrency(totalBeforePenalty)}</span>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-300">
+                                Total Before Penalty:
+                              </span>
+                              <span className="text-white">
+                                {formatCurrency(totalBeforePenalty)}
+                              </span>
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-gray-300">Time Until Maturity:</span>
-                              <span className="text-orange-300">{timeUntilMaturity()}</span>
+                            <div className="flex items-center justify-between">
+                              <span className="text-gray-300">
+                                Time Until Maturity:
+                              </span>
+                              <span className="text-orange-300">
+                                {timeUntilMaturity()}
+                              </span>
                             </div>
-                            <div className="flex justify-between items-center pt-2 border-t border-gray-700/50">
-                              <span className="text-gray-300">Penalty (10%):</span>
-                              <span className="text-red-400 font-medium">-{formatCurrency(penalty)}</span>
+                            <div className="flex items-center justify-between border-gray-700/50 border-t pt-2">
+                              <span className="text-gray-300">
+                                Penalty (10%):
+                              </span>
+                              <span className="font-medium text-red-400">
+                                -{formatCurrency(penalty)}
+                              </span>
                             </div>
                           </>
                         )}
-                        <div className="flex justify-between items-center pt-3 border-t border-gray-700/50">
-                          <span className="text-white font-semibold">You'll Receive:</span>
-                          <span className={`font-bold text-lg ${deposit.isMatured ? 'text-emerald-400' : 'text-orange-300'}`}>
+                        <div className="flex items-center justify-between border-gray-700/50 border-t pt-3">
+                          <span className="font-semibold text-white">
+                            You'll Receive:
+                          </span>
+                          <span
+                            className={`font-bold text-lg ${deposit.isMatured ? 'text-emerald-400' : 'text-orange-300'}`}
+                          >
                             {formatCurrency(finalAmount)}
                           </span>
                         </div>
@@ -423,42 +497,50 @@ export const UserDepositCard: React.FC<UserDepositCardProps> = ({ deposit, onAct
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex gap-3 mt-6">
+                <div className="mt-6 flex gap-3">
                   <button
-                    onClick={handleCancelWithdraw}
-                    className="flex-1 px-4 py-3 bg-gray-800/60 border border-gray-700/50 text-gray-300 font-medium rounded-xl hover:bg-gray-800/80 hover:text-white transition-all duration-300 backdrop-blur-sm"
+                    className="flex-1 rounded-xl border border-gray-700/50 bg-gray-800/60 px-4 py-3 font-medium text-gray-300 backdrop-blur-sm transition-all duration-300 hover:bg-gray-800/80 hover:text-white"
                     disabled={isWithdrawing}
+                    onClick={handleCancelWithdraw}
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={handleConfirmWithdraw}
-                    className={`flex-1 px-4 py-3 font-medium rounded-xl transition-all duration-300 backdrop-blur-sm ${
-                      !deposit.isMatured
-                        ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 hover:border-red-500/50'
-                        : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 hover:border-emerald-500/50'
+                    className={`flex-1 rounded-xl px-4 py-3 font-medium backdrop-blur-sm transition-all duration-300 ${
+                      deposit.isMatured
+                        ? 'border border-emerald-500/30 bg-emerald-500/20 text-emerald-400 hover:border-emerald-500/50 hover:bg-emerald-500/30'
+                        : 'border border-red-500/30 bg-red-500/20 text-red-400 hover:border-red-500/50 hover:bg-red-500/30'
                     }`}
                     disabled={isWithdrawing}
+                    onClick={handleConfirmWithdraw}
                   >
                     {isWithdrawing ? (
                       <span className="flex items-center justify-center gap-2">
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          className="w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+                          className="h-4 w-4 rounded-full border-2 border-current border-t-transparent"
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: 'linear',
+                          }}
                         />
                         Processing...
                       </span>
+                    ) : deposit.isMatured ? (
+                      'Confirm Withdrawal'
                     ) : (
-                      !deposit.isMatured ? 'Confirm Early Withdrawal' : 'Confirm Withdrawal'
+                      'Confirm Early Withdrawal'
                     )}
                   </button>
                 </div>
 
                 {/* Disclaimer */}
-                <p className="text-gray-400 text-xs mt-4 text-center">
-                  * Yield is calculated proportionally based on time elapsed since deposit.
-                  {!deposit.isMatured && ' A 10% penalty applies to early redemptions.'}
+                <p className="mt-4 text-center text-gray-400 text-xs">
+                  * Yield is calculated proportionally based on time elapsed
+                  since deposit.
+                  {!deposit.isMatured &&
+                    ' A 10% penalty applies to early redemptions.'}
                 </p>
               </div>
             </motion.div>

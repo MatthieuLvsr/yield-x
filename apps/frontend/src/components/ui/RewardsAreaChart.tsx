@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import React, { useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import type React from 'react';
+import { useRef } from 'react';
 
 interface RewardsAreaChartProps {
   data: Array<{
@@ -16,37 +17,37 @@ interface RewardsAreaChartProps {
 
 const RewardsAreaChart: React.FC<RewardsAreaChartProps> = ({
   data,
-  title = "Rewards Accumulation",
-  height = 350
+  title = 'Rewards Accumulation',
+  height = 350,
 }) => {
   const chartRef = useRef<HighchartsReact.RefObject>(null);
 
   // Convert data for Highcharts
-  const dailyRewardsData = data.map(item => [
+  const dailyRewardsData = data.map((item) => [
     new Date(item.date).getTime(),
-    item.dailyRewards
+    item.dailyRewards,
   ]);
 
-  const cumulativeRewardsData = data.map(item => [
+  const cumulativeRewardsData = data.map((item) => [
     new Date(item.date).getTime(),
-    item.cumulativeRewards
+    item.cumulativeRewards,
   ]);
 
   const options: Highcharts.Options = {
     chart: {
       backgroundColor: 'transparent',
-      height: height,
+      height,
       style: {
-        fontFamily: 'Inter, sans-serif'
-      }
+        fontFamily: 'Inter, sans-serif',
+      },
     },
     title: {
       text: title,
       style: {
         color: '#ffffff',
         fontSize: '18px',
-        fontWeight: '600'
-      }
+        fontWeight: '600',
+      },
     },
     xAxis: {
       type: 'datetime',
@@ -56,54 +57,57 @@ const RewardsAreaChart: React.FC<RewardsAreaChartProps> = ({
       labels: {
         style: {
           color: 'rgba(255, 255, 255, 0.7)',
-          fontSize: '11px'
-        }
+          fontSize: '11px',
+        },
       },
       title: {
         style: {
-          color: 'rgba(255, 255, 255, 0.7)'
-        }
-      }
+          color: 'rgba(255, 255, 255, 0.7)',
+        },
+      },
     },
-    yAxis: [{
-      title: {
-        text: 'Daily Rewards ($)',
-        style: {
-          color: '#10b981',
-          fontSize: '12px'
-        }
-      },
-      gridLineColor: 'rgba(255, 255, 255, 0.1)',
-      lineColor: 'rgba(255, 255, 255, 0.2)',
-      tickColor: 'rgba(255, 255, 255, 0.2)',
-      labels: {
-        style: {
-          color: '#10b981',
-          fontSize: '11px'
+    yAxis: [
+      {
+        title: {
+          text: 'Daily Rewards ($)',
+          style: {
+            color: '#10b981',
+            fontSize: '12px',
+          },
         },
-        formatter: function() {
-          return '$' + Highcharts.numberFormat(this.value as number, 0);
-        }
-      }
-    }, {
-      title: {
-        text: 'Cumulative Rewards ($)',
-        style: {
-          color: '#3b82f6',
-          fontSize: '12px'
-        }
-      },
-      labels: {
-        style: {
-          color: '#3b82f6',
-          fontSize: '11px'
+        gridLineColor: 'rgba(255, 255, 255, 0.1)',
+        lineColor: 'rgba(255, 255, 255, 0.2)',
+        tickColor: 'rgba(255, 255, 255, 0.2)',
+        labels: {
+          style: {
+            color: '#10b981',
+            fontSize: '11px',
+          },
+          formatter() {
+            return '$' + Highcharts.numberFormat(this.value as number, 0);
+          },
         },
-        formatter: function() {
-          return '$' + Highcharts.numberFormat(this.value as number, 0);
-        }
       },
-      opposite: true
-    }],
+      {
+        title: {
+          text: 'Cumulative Rewards ($)',
+          style: {
+            color: '#3b82f6',
+            fontSize: '12px',
+          },
+        },
+        labels: {
+          style: {
+            color: '#3b82f6',
+            fontSize: '11px',
+          },
+          formatter() {
+            return '$' + Highcharts.numberFormat(this.value as number, 0);
+          },
+        },
+        opposite: true,
+      },
+    ],
     tooltip: {
       backgroundColor: 'rgba(20, 20, 25, 0.95)',
       borderColor: 'rgba(59, 130, 246, 0.3)',
@@ -111,25 +115,25 @@ const RewardsAreaChart: React.FC<RewardsAreaChartProps> = ({
       borderRadius: 8,
       style: {
         color: '#ffffff',
-        fontSize: '12px'
+        fontSize: '12px',
       },
       shared: true,
-      formatter: function() {
+      formatter() {
         let tooltip = `<b>${Highcharts.dateFormat('%B %e, %Y', this.x as number)}</b><br/>`;
-        this.points?.forEach(point => {
+        this.points?.forEach((point) => {
           tooltip += `<span style="color: ${point.color}">${point.series.name}: $${Highcharts.numberFormat(point.y as number, 2)}</span><br/>`;
         });
         return tooltip;
-      }
+      },
     },
     legend: {
       itemStyle: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: '12px'
+        fontSize: '12px',
       },
       itemHoverStyle: {
-        color: '#ffffff'
-      }
+        color: '#ffffff',
+      },
     },
     plotOptions: {
       area: {
@@ -140,48 +144,54 @@ const RewardsAreaChart: React.FC<RewardsAreaChartProps> = ({
           states: {
             hover: {
               enabled: true,
-              radius: 5
-            }
-          }
-        }
+              radius: 5,
+            },
+          },
+        },
       },
       column: {
         borderWidth: 0,
         borderRadius: 2,
         pointPadding: 0.1,
-        groupPadding: 0.1
-      }
+        groupPadding: 0.1,
+      },
     },
-    series: [{
-      type: 'column',
-      name: 'Daily Rewards',
-      data: dailyRewardsData,
-      yAxis: 0,
-      color: '#10b981',
-      opacity: 0.8
-    }, {
-      type: 'area',
-      name: 'Cumulative Rewards',
-      data: cumulativeRewardsData,
-      yAxis: 1,
-      color: '#3b82f6',
-      fillColor: {
-        linearGradient: {
-          x1: 0, y1: 0, x2: 0, y2: 1
+    series: [
+      {
+        type: 'column',
+        name: 'Daily Rewards',
+        data: dailyRewardsData,
+        yAxis: 0,
+        color: '#10b981',
+        opacity: 0.8,
+      },
+      {
+        type: 'area',
+        name: 'Cumulative Rewards',
+        data: cumulativeRewardsData,
+        yAxis: 1,
+        color: '#3b82f6',
+        fillColor: {
+          linearGradient: {
+            x1: 0,
+            y1: 0,
+            x2: 0,
+            y2: 1,
+          },
+          stops: [
+            [0, 'rgba(59, 130, 246, 0.3)'],
+            [1, 'rgba(59, 130, 246, 0.05)'],
+          ],
         },
-        stops: [
-          [0, 'rgba(59, 130, 246, 0.3)'],
-          [1, 'rgba(59, 130, 246, 0.05)']
-        ]
-      }
-    }],
+      },
+    ],
     credits: {
-      enabled: false
-    }
+      enabled: false,
+    },
   };
 
   return (
-    <div className="yieldx-card-glass p-6 rounded-2xl border border-white/10">
+    <div className="yieldx-card-glass rounded-2xl border border-white/10 p-6">
       <HighchartsReact
         highcharts={Highcharts}
         options={options}

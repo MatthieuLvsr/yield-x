@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
+import type React from 'react';
 
 interface StrategiesHeaderProps {
   strategiesCount: number;
@@ -16,11 +16,11 @@ const StrategiesHeader: React.FC<StrategiesHeaderProps> = ({
   isLoading = false,
 }) => {
   return (
-    <div className="text-center mb-12">
+    <div className="mb-12 text-center">
       <motion.h2
-        className="text-4xl md:text-5xl font-bold text-white mb-4"
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="mb-4 font-bold text-4xl text-white md:text-5xl"
+        initial={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.6 }}
       >
         <span className="text-white">Earn </span>
@@ -28,52 +28,52 @@ const StrategiesHeader: React.FC<StrategiesHeaderProps> = ({
           Strategies
         </span>
       </motion.h2>
-      
+
       <motion.p
-        className="text-xl text-gray-300 max-w-3xl mx-auto mb-8"
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="mx-auto mb-8 max-w-3xl text-gray-300 text-xl"
+        initial={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.6, delay: 0.2 }}
       >
-        Choose from our curated selection of yield strategies, each optimized for 
-        different risk profiles and return expectations.
+        Choose from our curated selection of yield strategies, each optimized
+        for different risk profiles and return expectations.
       </motion.p>
-      
+
       {/* Stats et refresh */}
       <motion.div
-        className="flex flex-wrap justify-center items-center gap-8 mb-12"
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        className="mb-12 flex flex-wrap items-center justify-center gap-8"
+        initial={{ opacity: 0, y: 20 }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
         <div className="text-center">
-          <div className="text-3xl font-bold text-blue-400">{strategiesCount}</div>
-          <div className="text-sm text-gray-400">Strategies Available</div>
+          <div className="font-bold text-3xl text-blue-400">
+            {strategiesCount}
+          </div>
+          <div className="text-gray-400 text-sm">Strategies Available</div>
         </div>
         <div className="text-center">
-          <div className="text-3xl font-bold text-green-400">$125.8M</div>
-          <div className="text-sm text-gray-400">Total Value Locked</div>
+          <div className="font-bold text-3xl text-green-400">$125.8M</div>
+          <div className="text-gray-400 text-sm">Total Value Locked</div>
         </div>
         <div className="text-center">
-          <div className="text-3xl font-bold text-purple-400">12.5%</div>
-          <div className="text-sm text-gray-400">Average APY</div>
+          <div className="font-bold text-3xl text-purple-400">12.5%</div>
+          <div className="text-gray-400 text-sm">Average APY</div>
         </div>
-        
+
         {/* Refresh button */}
         {onRefresh && (
           <motion.button
-            onClick={onRefresh}
+            className="flex items-center gap-2 rounded-xl border border-gray-700/50 bg-gray-800/40 px-4 py-2 text-white transition-all duration-200 hover:bg-gray-700/60 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800/40 hover:bg-gray-700/60 
-                       border border-gray-700/50 rounded-xl text-white transition-all duration-200
-                       disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={onRefresh}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <ArrowPathIcon 
-              className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} 
+            <ArrowPathIcon
+              className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`}
             />
-            <span className="text-sm font-medium">
+            <span className="font-medium text-sm">
               {isLoading ? 'Refreshing...' : 'Refresh Strategies'}
             </span>
           </motion.button>

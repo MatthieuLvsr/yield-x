@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import React from "react";
+import { motion } from 'framer-motion';
+import type React from 'react';
 
 interface PriceData {
   time: string;
@@ -27,7 +27,7 @@ const TradingChart: React.FC<TradingChartProps> = ({
 
   // Generate simple line chart points
   const generateChartPath = () => {
-    if (data.length < 2) return "";
+    if (data.length < 2) return '';
 
     const width = 300;
     const height = 120;
@@ -47,23 +47,23 @@ const TradingChart: React.FC<TradingChartProps> = ({
       return `${x},${y}`;
     });
 
-    return `M ${points.join(" L ")}`;
+    return `M ${points.join(' L ')}`;
   };
 
   return (
-    <div className="glass-card p-6 rounded-3xl border border-white/10 backdrop-blur-xl">
-      <div className="flex items-center justify-between mb-6">
-        <h4 className="text-xl font-bold text-white">{symbol} Chart</h4>
+    <div className="glass-card rounded-3xl border border-white/10 p-6 backdrop-blur-xl">
+      <div className="mb-6 flex items-center justify-between">
+        <h4 className="font-bold text-white text-xl">{symbol} Chart</h4>
         <div className="text-right">
-          <div className="text-white font-bold text-lg">
+          <div className="font-bold text-lg text-white">
             {formatPrice(currentPrice)}
           </div>
           <div
-            className={`text-sm font-medium ${
-              isPositive ? "text-green-400" : "text-red-400"
+            className={`font-medium text-sm ${
+              isPositive ? 'text-green-400' : 'text-red-400'
             }`}
           >
-            {isPositive ? "+" : ""}
+            {isPositive ? '+' : ''}
             {priceChange.toFixed(2)}%
           </div>
         </div>
@@ -71,18 +71,18 @@ const TradingChart: React.FC<TradingChartProps> = ({
 
       <div className="relative">
         <svg
-          width="100%"
+          className="overflow-visible"
           height="140"
           viewBox="0 0 300 140"
-          className="overflow-visible"
+          width="100%"
         >
           {/* Grid lines */}
           <defs>
             <pattern
-              id="grid"
-              width="30"
               height="14"
+              id="grid"
               patternUnits="userSpaceOnUse"
+              width="30"
             >
               <path
                 d="M 30 0 L 0 0 0 14"
@@ -92,18 +92,18 @@ const TradingChart: React.FC<TradingChartProps> = ({
               />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
+          <rect fill="url(#grid)" height="100%" width="100%" />
 
           {/* Price line */}
           <motion.path
+            animate={{ pathLength: 1 }}
+            className="drop-shadow-lg"
             d={generateChartPath()}
             fill="none"
-            stroke={isPositive ? "#10b981" : "#ef4444"}
-            strokeWidth="2"
-            className="drop-shadow-lg"
             initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 2, ease: "easeInOut" }}
+            stroke={isPositive ? '#10b981' : '#ef4444'}
+            strokeWidth="2"
+            transition={{ duration: 2, ease: 'easeInOut' }}
           />
 
           {/* Gradient fill */}
@@ -111,34 +111,34 @@ const TradingChart: React.FC<TradingChartProps> = ({
             <linearGradient
               id="priceGradient"
               x1="0%"
-              y1="0%"
               x2="0%"
+              y1="0%"
               y2="100%"
             >
               <stop
                 offset="0%"
-                stopColor={isPositive ? "#10b981" : "#ef4444"}
+                stopColor={isPositive ? '#10b981' : '#ef4444'}
                 stopOpacity="0.3"
               />
               <stop
                 offset="100%"
-                stopColor={isPositive ? "#10b981" : "#ef4444"}
+                stopColor={isPositive ? '#10b981' : '#ef4444'}
                 stopOpacity="0"
               />
             </linearGradient>
           </defs>
 
           <motion.path
+            animate={{ opacity: 1 }}
             d={`${generateChartPath()} L 280,120 L 20,120 Z`}
             fill="url(#priceGradient)"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 1 }}
           />
         </svg>
 
         {/* Time labels */}
-        <div className="flex justify-between mt-4 text-xs text-white/60">
+        <div className="mt-4 flex justify-between text-white/60 text-xs">
           <span>24h ago</span>
           <span>12h ago</span>
           <span>6h ago</span>
@@ -147,17 +147,17 @@ const TradingChart: React.FC<TradingChartProps> = ({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-white/10">
+      <div className="mt-6 grid grid-cols-2 gap-4 border-white/10 border-t pt-4">
         <div>
-          <div className="text-white/60 text-sm">24h Volume</div>
-          <div className="text-white font-medium">
+          <div className="text-sm text-white/60">24h Volume</div>
+          <div className="font-medium text-white">
             ${(data.reduce((sum, d) => sum + d.volume, 0) / 1000).toFixed(1)}K
           </div>
         </div>
         <div>
-          <div className="text-white/60 text-sm">24h Range</div>
-          <div className="text-white font-medium">
-            {formatPrice(Math.min(...data.map((d) => d.price)))} -{" "}
+          <div className="text-sm text-white/60">24h Range</div>
+          <div className="font-medium text-white">
+            {formatPrice(Math.min(...data.map((d) => d.price)))} -{' '}
             {formatPrice(Math.max(...data.map((d) => d.price)))}
           </div>
         </div>

@@ -1,9 +1,15 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, Shield, Clock, DollarSign, ExternalLink } from 'lucide-react';
-import { FormattedStrategy } from '../../hooks/useStrategies';
+import {
+  Clock,
+  DollarSign,
+  ExternalLink,
+  Shield,
+  TrendingUp,
+} from 'lucide-react';
+import type React from 'react';
+import type { FormattedStrategy } from '../../hooks/useStrategies';
 import YieldCard from '../ui/YieldCard';
 
 interface StrategyCardProps {
@@ -11,10 +17,7 @@ interface StrategyCardProps {
   onSelect?: (strategy: FormattedStrategy) => void;
 }
 
-const StrategyCard: React.FC<StrategyCardProps> = ({
-  strategy,
-  onSelect,
-}) => {
+const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onSelect }) => {
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'Low':
@@ -31,13 +34,13 @@ const StrategyCard: React.FC<StrategyCardProps> = ({
   const getRiskIcon = (risk: string) => {
     switch (risk) {
       case 'Low':
-        return <Shield size={14} className="text-green-400" />;
+        return <Shield className="text-green-400" size={14} />;
       case 'Medium':
-        return <TrendingUp size={14} className="text-yellow-400" />;
+        return <TrendingUp className="text-yellow-400" size={14} />;
       case 'High':
-        return <TrendingUp size={14} className="text-red-400" />;
+        return <TrendingUp className="text-red-400" size={14} />;
       default:
-        return <Shield size={14} className="text-gray-400" />;
+        return <Shield className="text-gray-400" size={14} />;
     }
   };
 
@@ -49,67 +52,66 @@ const StrategyCard: React.FC<StrategyCardProps> = ({
 
   return (
     <YieldCard
-      variant="glass"
+      className="group relative overflow-hidden"
       hover={true}
       onClick={handleClick}
-      className="relative overflow-hidden group"
+      variant="glass"
     >
-      <div className="p-6 space-y-4">
+      <div className="space-y-4 p-6">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-blue-400 transition-colors">
+            <h3 className="mb-1 font-semibold text-lg text-white transition-colors group-hover:text-blue-400">
               {strategy.name}
             </h3>
-            <p className="text-sm text-gray-400 line-clamp-2">
+            <p className="line-clamp-2 text-gray-400 text-sm">
               {strategy.description}
             </p>
           </div>
           <motion.div
-            className="ml-4 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="ml-4 opacity-0 transition-opacity group-hover:opacity-100"
             whileHover={{ scale: 1.1 }}
           >
-            <ExternalLink size={16} className="text-gray-400" />
+            <ExternalLink className="text-gray-400" size={16} />
           </motion.div>
         </div>
 
         {/* Token and Protocol */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 px-3 py-1 bg-blue-500/20 text-blue-400 
-                           border border-blue-500/30 rounded-full text-sm font-medium">
+            <div className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/20 px-3 py-1 font-medium text-blue-400 text-sm">
               <DollarSign size={12} />
               {strategy.token}
             </div>
           </div>
-          <div className="text-xs text-gray-500">
-            {strategy.protocol}
-          </div>
+          <div className="text-gray-500 text-xs">{strategy.protocol}</div>
         </div>
 
         {/* Métriques principales */}
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-white mb-1">
+            <div className="mb-1 font-bold text-2xl text-white">
               {strategy.apy.toFixed(1)}%
             </div>
-            <div className="text-xs text-gray-400">APY</div>
+            <div className="text-gray-400 text-xs">APY</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-gray-300 mb-1">
+            <div className="mb-1 font-semibold text-gray-300 text-lg">
               {strategy.tvl}
             </div>
-            <div className="text-xs text-gray-400">TVL</div>
+            <div className="text-gray-400 text-xs">TVL</div>
           </div>
         </div>
 
         {/* Risk et Lock Period */}
-        <div className="flex items-center justify-between mb-4">
-          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${getRiskColor(strategy.risk)}`}>
+        <div className="mb-4 flex items-center justify-between">
+          <div
+            className={`flex items-center gap-2 rounded-full border px-3 py-1 font-medium text-sm ${getRiskColor(strategy.risk)}`}
+          >
             {getRiskIcon(strategy.risk)}
             {strategy.risk} Risk
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-400">
+          <div className="flex items-center gap-2 text-gray-400 text-sm">
             <Clock size={14} />
             {strategy.lockPeriod}
           </div>
@@ -117,9 +119,7 @@ const StrategyCard: React.FC<StrategyCardProps> = ({
 
         {/* Action Button */}
         <motion.button
-          className="w-full py-3 px-4 bg-gradient-to-r from-blue-500 to-purple-600 
-                     text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 
-                     transition-all duration-200 group-hover:shadow-lg group-hover:shadow-blue-500/20"
+          className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 font-semibold text-white transition-all duration-200 hover:from-blue-600 hover:to-purple-700 group-hover:shadow-blue-500/20 group-hover:shadow-lg"
           onClick={(e) => {
             e.stopPropagation();
             handleClick();
@@ -134,12 +134,10 @@ const StrategyCard: React.FC<StrategyCardProps> = ({
         </motion.button>
 
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 
-                       opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-        
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
         {/* Glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 
-                       blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-50" />
       </div>
     </YieldCard>
   );

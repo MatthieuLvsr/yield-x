@@ -1,21 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { SolanaProvider } from "@/components/providers/SolanaProvider";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { SolanaProvider } from '@/components/providers/SolanaProvider';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Yield-X | Advanced Yield Optimization on Solana",
-  description: "Unlock the full potential of your crypto assets with our advanced yield optimization platform on Solana",
+  title: 'Yield-X | Advanced Yield Optimization on Solana',
+  description:
+    'Unlock the full potential of your crypto assets with our advanced yield optimization platform on Solana',
 };
 
 export default function RootLayout({
@@ -26,11 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased`}
       >
-        <SolanaProvider>
-          {children}
-        </SolanaProvider>
+        <SolanaProvider>{children}</SolanaProvider>
       </body>
     </html>
   );

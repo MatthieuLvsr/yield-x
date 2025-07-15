@@ -1,11 +1,11 @@
-import { Connection, PublicKey } from '@solana/web3.js';
 import { getMint } from '@solana/spl-token';
+import type { Connection, PublicKey } from '@solana/web3.js';
 
 /**
  * Récupère le nombre de décimales d'un token
  */
 export async function getTokenDecimals(
-  connection: Connection, 
+  connection: Connection,
   tokenMint: PublicKey
 ): Promise<number> {
   try {
@@ -22,12 +22,12 @@ export async function getTokenDecimals(
  * Convertit un montant en unités de base du token
  */
 export function toTokenBaseUnits(amount: number, decimals: number): bigint {
-  return BigInt(Math.floor(amount * Math.pow(10, decimals)));
+  return BigInt(Math.floor(amount * 10 ** decimals));
 }
 
 /**
  * Convertit des unités de base du token en montant lisible
  */
 export function fromTokenBaseUnits(amount: bigint, decimals: number): number {
-  return Number(amount) / Math.pow(10, decimals);
+  return Number(amount) / 10 ** decimals;
 }

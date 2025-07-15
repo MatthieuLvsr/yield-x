@@ -17,228 +17,228 @@ export interface DepositStateAccount {
 
 // IDL simplifié pour Anchor
 export const IDL = {
-  version: "0.1.0",
-  name: "yield_app",
+  version: '0.1.0',
+  name: 'yield_app',
   instructions: [
     {
-      name: "createStrategy",
+      name: 'createStrategy',
       accounts: [
         {
-          name: "strategy",
+          name: 'strategy',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "tokenAddressYield",
+          name: 'tokenAddressYield',
           isMut: true,
-          isSigner: true
+          isSigner: true,
         },
         {
-          name: "signer",
+          name: 'signer',
           isMut: true,
-          isSigner: true
+          isSigner: true,
         },
         {
-          name: "systemProgram",
+          name: 'systemProgram',
           isMut: false,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "tokenProgram",
+          name: 'tokenProgram',
           isMut: false,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "rent",
+          name: 'rent',
           isMut: false,
-          isSigner: false
-        }
+          isSigner: false,
+        },
       ],
       args: [
         {
-          name: "tokenAddress",
-          type: "publicKey"
+          name: 'tokenAddress',
+          type: 'publicKey',
         },
         {
-          name: "rewardApy",
-          type: "u64"
-        }
-      ]
+          name: 'rewardApy',
+          type: 'u64',
+        },
+      ],
     },
     {
-      name: "deposit",
+      name: 'deposit',
       accounts: [
         {
-          name: "strategy",
+          name: 'strategy',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "strategyTokenAccount",
+          name: 'strategyTokenAccount',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "tokenMint",
+          name: 'tokenMint',
           isMut: false,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "deposit",
+          name: 'deposit',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "signer",
+          name: 'signer',
           isMut: true,
-          isSigner: true
+          isSigner: true,
         },
         {
-          name: "userTokenAccount",
+          name: 'userTokenAccount',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "userYieldTokenAccount",
+          name: 'userYieldTokenAccount',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "yieldTokenMint",
+          name: 'yieldTokenMint',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "tokenProgram",
+          name: 'tokenProgram',
           isMut: false,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "systemProgram",
+          name: 'systemProgram',
           isMut: false,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "rent",
+          name: 'rent',
           isMut: false,
-          isSigner: false
-        }
+          isSigner: false,
+        },
       ],
       args: [
         {
-          name: "amount",
-          type: "u64"
-        }
-      ]
+          name: 'amount',
+          type: 'u64',
+        },
+      ],
     },
     {
-      name: "redeem",
+      name: 'redeem',
       accounts: [
         {
-          name: "strategy",
+          name: 'strategy',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "strategyTokenAccount",
+          name: 'strategyTokenAccount',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "userTokenAccount",
+          name: 'userTokenAccount',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "userYieldTokenAccount",
+          name: 'userYieldTokenAccount',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "yieldTokenMint",
+          name: 'yieldTokenMint',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "deposit",
+          name: 'deposit',
           isMut: true,
-          isSigner: false
+          isSigner: false,
         },
         {
-          name: "signer",
+          name: 'signer',
           isMut: true,
-          isSigner: true
+          isSigner: true,
         },
         {
-          name: "tokenProgram",
+          name: 'tokenProgram',
           isMut: false,
-          isSigner: false
-        }
+          isSigner: false,
+        },
       ],
       args: [
         {
-          name: "withPenalty",
-          type: "bool"
-        }
-      ]
-    }
+          name: 'withPenalty',
+          type: 'bool',
+        },
+      ],
+    },
   ],
   accounts: [
     {
-      name: "DepositState",
+      name: 'DepositState',
       type: {
-        kind: "struct",
+        kind: 'struct',
         fields: [
           {
-            name: "montant",
-            type: "u64"
+            name: 'montant',
+            type: 'u64',
           },
           {
-            name: "montantYield",
-            type: "u64"
+            name: 'montantYield',
+            type: 'u64',
           },
           {
-            name: "user",
-            type: "publicKey"
+            name: 'user',
+            type: 'publicKey',
           },
           {
-            name: "strategyAddress",
-            type: "publicKey"
+            name: 'strategyAddress',
+            type: 'publicKey',
           },
           {
-            name: "date",
-            type: "i64"
+            name: 'date',
+            type: 'i64',
           },
           {
-            name: "maturityDate",
-            type: "i64"
-          }
-        ]
-      }
+            name: 'maturityDate',
+            type: 'i64',
+          },
+        ],
+      },
     },
     {
-      name: "Strategy",
+      name: 'Strategy',
       type: {
-        kind: "struct",
+        kind: 'struct',
         fields: [
           {
-            name: "tokenAddress",
-            type: "publicKey"
+            name: 'tokenAddress',
+            type: 'publicKey',
           },
           {
-            name: "tokenYieldAddress",
-            type: "publicKey"
+            name: 'tokenYieldAddress',
+            type: 'publicKey',
           },
           {
-            name: "date",
-            type: "i64"
+            name: 'date',
+            type: 'i64',
           },
           {
-            name: "rewardApy",
-            type: "u64"
-          }
-        ]
-      }
-    }
-  ]
+            name: 'rewardApy',
+            type: 'u64',
+          },
+        ],
+      },
+    },
+  ],
 };

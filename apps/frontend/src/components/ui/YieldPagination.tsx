@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
+import React from 'react';
 
 interface PaginationProps {
   currentPage: number;
@@ -33,7 +33,11 @@ const YieldPagination: React.FC<PaginationProps> = ({
     const range = [];
     const rangeWithDots = [];
 
-    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+    for (
+      let i = Math.max(2, currentPage - delta);
+      i <= Math.min(totalPages - 1, currentPage + delta);
+      i++
+    ) {
       range.push(i);
     }
 
@@ -57,9 +61,9 @@ const YieldPagination: React.FC<PaginationProps> = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mt-8">
+    <div className="mt-8 flex flex-col items-center justify-between gap-6 sm:flex-row">
       {/* Informations de pagination */}
-      <div className="text-sm text-gray-400">
+      <div className="text-gray-400 text-sm">
         Showing {startIndex + 1} to {endIndex} of {totalItems} strategies
       </div>
 
@@ -67,15 +71,13 @@ const YieldPagination: React.FC<PaginationProps> = ({
       <div className="flex items-center gap-2">
         {/* Bouton précédent */}
         <motion.button
-          className={`
-            flex items-center justify-center px-3 py-2 rounded-xl transition-all duration-200
-            ${currentPage === 1 
-              ? 'bg-gray-800/20 text-gray-600 cursor-not-allowed' 
-              : 'bg-gray-800/40 text-white hover:bg-gray-700/60 hover:shadow-lg hover:shadow-blue-500/10'
-            }
-          `}
-          onClick={onPreviousPage}
+          className={`flex items-center justify-center rounded-xl px-3 py-2 transition-all duration-200 ${
+            currentPage === 1
+              ? 'cursor-not-allowed bg-gray-800/20 text-gray-600'
+              : 'bg-gray-800/40 text-white hover:bg-gray-700/60 hover:shadow-blue-500/10 hover:shadow-lg'
+          } `}
           disabled={currentPage === 1}
+          onClick={onPreviousPage}
           whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
           whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
         >
@@ -87,18 +89,16 @@ const YieldPagination: React.FC<PaginationProps> = ({
           {getPageNumbers().map((page, index) => (
             <React.Fragment key={index}>
               {page === '...' ? (
-                <div className="flex items-center justify-center w-10 h-10 text-gray-500">
+                <div className="flex h-10 w-10 items-center justify-center text-gray-500">
                   <MoreHorizontal size={16} />
                 </div>
               ) : (
                 <motion.button
-                  className={`
-                    flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200
-                    ${page === currentPage
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg shadow-blue-500/20'
-                      : 'bg-gray-800/40 text-gray-300 hover:bg-gray-700/60 hover:text-white hover:shadow-lg hover:shadow-blue-500/10'
-                    }
-                  `}
+                  className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 ${
+                    page === currentPage
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-blue-500/20 shadow-lg'
+                      : 'bg-gray-800/40 text-gray-300 hover:bg-gray-700/60 hover:text-white hover:shadow-blue-500/10 hover:shadow-lg'
+                  } `}
                   onClick={() => onPageChange(page as number)}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -112,15 +112,13 @@ const YieldPagination: React.FC<PaginationProps> = ({
 
         {/* Bouton suivant */}
         <motion.button
-          className={`
-            flex items-center justify-center px-3 py-2 rounded-xl transition-all duration-200
-            ${currentPage === totalPages 
-              ? 'bg-gray-800/20 text-gray-600 cursor-not-allowed' 
-              : 'bg-gray-800/40 text-white hover:bg-gray-700/60 hover:shadow-lg hover:shadow-blue-500/10'
-            }
-          `}
-          onClick={onNextPage}
+          className={`flex items-center justify-center rounded-xl px-3 py-2 transition-all duration-200 ${
+            currentPage === totalPages
+              ? 'cursor-not-allowed bg-gray-800/20 text-gray-600'
+              : 'bg-gray-800/40 text-white hover:bg-gray-700/60 hover:shadow-blue-500/10 hover:shadow-lg'
+          } `}
           disabled={currentPage === totalPages}
+          onClick={onNextPage}
           whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
           whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
         >

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect } from 'react';
 
@@ -17,10 +17,10 @@ export const useSmoothScroll = () => {
             // Offset pour le header fixe
             const headerOffset = 96; // 24 * 4 = 96px (h-24)
             const elementPosition = targetElement.offsetTop - headerOffset;
-            
+
             window.scrollTo({
               top: elementPosition,
-              behavior: 'smooth'
+              behavior: 'smooth',
             });
           }
         }
@@ -34,17 +34,26 @@ export const useSmoothScroll = () => {
 
 // Hook pour détecter la section active
 export const useActiveSection = () => {
-  const sections = ['protocol', 'strategies', 'portfolio', 'marketplace', 'analytics'];
-  
+  const sections = [
+    'protocol',
+    'strategies',
+    'portfolio',
+    'marketplace',
+    'analytics',
+  ];
+
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 120; // Offset pour le header
-      
-      sections.forEach(sectionId => {
+
+      sections.forEach((sectionId) => {
         const element = document.getElementById(sectionId);
         if (element) {
           const { offsetTop, offsetHeight } = element;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+          if (
+            scrollPosition >= offsetTop &&
+            scrollPosition < offsetTop + offsetHeight
+          ) {
             // Mettre à jour l'état actif si nécessaire
             console.log('Active section:', sectionId);
           }

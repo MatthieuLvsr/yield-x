@@ -1,13 +1,16 @@
 import { PublicKey } from '@solana/web3.js';
 import { IDL } from '../types/yield_app';
 
-export const PROGRAM_ID = new PublicKey('QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk');
+export const PROGRAM_ID = new PublicKey(
+  'QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk'
+);
 
 export { IDL };
 
 // Social Media Links
 export const SOCIAL_LINKS = {
-  DISCORD: process.env.NEXT_PUBLIC_DISCORD_INVITE || 'https://discord.gg/yield-x',
+  DISCORD:
+    process.env.NEXT_PUBLIC_DISCORD_INVITE || 'https://discord.gg/yield-x',
   TWITTER: process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com/yieldx',
   GITHUB: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/yield-x',
   DOCS: process.env.NEXT_PUBLIC_DOCS_URL || 'https://docs.yieldx.com',
@@ -20,7 +23,7 @@ export const TOKEN_MINTS = {
   USDC: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'), // USDC devnet
   SOL: new PublicKey('So11111111111111111111111111111111111111112'), // Wrapped SOL (same for all networks)
   RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // RAY devnet (using a test token)
-  
+
   // Mainnet addresses (commented for reference)
   // USDC: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), // USDC mainnet
   // RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // Raydium mainnet
@@ -36,7 +39,7 @@ export const STRATEGIES = [
     apy: 8.5,
     risk: 'Low' as const,
     lockPeriod: 30, // days
-    description: 'Conservative yield strategy with minimal risk'
+    description: 'Conservative yield strategy with minimal risk',
   },
   {
     id: '2',
@@ -46,7 +49,7 @@ export const STRATEGIES = [
     apy: 15.2,
     risk: 'Medium' as const,
     lockPeriod: 60, // days
-    description: 'Enhanced SOL staking with additional yield opportunities'
+    description: 'Enhanced SOL staking with additional yield opportunities',
   },
   {
     id: '3',
@@ -56,6 +59,6 @@ export const STRATEGIES = [
     apy: 24.8,
     risk: 'High' as const,
     lockPeriod: 90, // days
-    description: 'High-yield DeFi protocol participation'
-  }
+    description: 'High-yield DeFi protocol participation',
+  },
 ] as const;

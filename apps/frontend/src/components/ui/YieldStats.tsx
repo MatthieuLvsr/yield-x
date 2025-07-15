@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
+import type React from 'react';
 import YieldCard from '@/components/ui/YieldCard';
 
 interface StatCardProps {
@@ -44,23 +44,25 @@ const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
     >
-      <YieldCard variant="stats" className="p-6 text-center">
+      <YieldCard className="p-6 text-center" variant="stats">
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-white/60 uppercase tracking-wider">
+          <h3 className="font-medium text-sm text-white/60 uppercase tracking-wider">
             {title}
           </h3>
-          <div className={`text-3xl font-bold ${gradientClasses[variant]} bg-clip-text text-transparent`}>
+          <div
+            className={`font-bold text-3xl ${gradientClasses[variant]} bg-clip-text text-transparent`}
+          >
             {value}
           </div>
-          {subtitle && (
-            <p className="text-sm text-white/50">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-sm text-white/50">{subtitle}</p>}
           {trendValue && (
-            <div className={`flex items-center justify-center space-x-1 text-sm ${trendColors[trend]}`}>
+            <div
+              className={`flex items-center justify-center space-x-1 text-sm ${trendColors[trend]}`}
+            >
               <span>{trendIcons[trend]}</span>
               <span>{trendValue}</span>
             </div>
@@ -85,7 +87,9 @@ interface YieldStatsProps {
 
 const YieldStats: React.FC<YieldStatsProps> = ({ stats, className = '' }) => {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ${className}`}>
+    <div
+      className={`grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 ${className}`}
+    >
       {stats.map((stat, index) => (
         <StatCard key={stat.title} {...stat} index={index} />
       ))}

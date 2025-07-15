@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
+import type React from 'react';
 
 interface YieldButtonProps {
   children: React.ReactNode;
@@ -22,8 +22,9 @@ const YieldButton: React.FC<YieldButtonProps> = ({
   className = '',
   loading = false,
 }) => {
-  const baseClasses = 'font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100';
-  
+  const baseClasses =
+    'font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100';
+
   const sizeClasses = {
     sm: 'px-4 py-2 text-sm',
     md: 'px-6 py-3 text-base',
@@ -40,15 +41,15 @@ const YieldButton: React.FC<YieldButtonProps> = ({
   return (
     <motion.button
       className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
-      onClick={onClick}
       disabled={disabled || loading}
+      onClick={onClick}
+      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       whileHover={{ scale: disabled ? 1 : 1.05 }}
       whileTap={{ scale: disabled ? 1 : 0.95 }}
-      transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {loading ? (
         <div className="flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2"></div>
+          <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-white/20 border-t-white" />
           Loading...
         </div>
       ) : (

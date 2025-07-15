@@ -1,18 +1,20 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useMemo } from 'react';
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
 import {
+  ConnectionProvider,
+  WalletProvider,
+} from '@solana/wallet-adapter-react';
+import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import {
+  CoinbaseWalletAdapter,
   PhantomWalletAdapter,
   SolflareWalletAdapter,
-  CoinbaseWalletAdapter,
-  // TrustWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
+import { clusterApiUrl } from '@solana/web3.js';
+import type React from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
-// Import wallet adapter CSS
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 interface SolanaContextType {
@@ -60,10 +62,8 @@ export const SolanaProvider: React.FC<SolanaProviderProps> = ({ children }) => {
   return (
     <SolanaContext.Provider value={contextValue}>
       <ConnectionProvider endpoint={endpoint}>
-        <WalletProvider wallets={wallets} autoConnect>
-          <WalletModalProvider>
-            {children}
-          </WalletModalProvider>
+        <WalletProvider autoConnect wallets={wallets}>
+          <WalletModalProvider>{children}</WalletModalProvider>
         </WalletProvider>
       </ConnectionProvider>
     </SolanaContext.Provider>

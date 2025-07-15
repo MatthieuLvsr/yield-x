@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, MessageCircle, Hash, Volume2 } from 'lucide-react';
+import { Hash, MessageCircle, Users, Volume2 } from 'lucide-react';
+import type React from 'react';
 import { SOCIAL_LINKS } from '@/lib/constants';
 
 interface DiscordWidgetProps {
@@ -16,7 +16,7 @@ const DiscordWidget: React.FC<DiscordWidgetProps> = ({
   variant = 'button',
   size = 'md',
   showMemberCount = false,
-  className = ''
+  className = '',
 }) => {
   const handleJoinDiscord = () => {
     window.open(SOCIAL_LINKS.DISCORD, '_blank', 'noopener,noreferrer');
@@ -25,24 +25,18 @@ const DiscordWidget: React.FC<DiscordWidgetProps> = ({
   const sizeClasses = {
     sm: 'px-3 py-2 text-sm',
     md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg'
+    lg: 'px-6 py-3 text-lg',
   };
 
   if (variant === 'button') {
     return (
       <motion.button
+        className={`flex items-center gap-2 rounded-lg border border-[#5865F2]/30 bg-[#5865F2]/20 font-medium text-[#5865F2] transition-all duration-200 hover:bg-[#5865F2]/30 ${sizeClasses[size]} ${className} `}
         onClick={handleJoinDiscord}
-        className={`
-          flex items-center gap-2 
-          bg-[#5865F2]/20 border border-[#5865F2]/30 text-[#5865F2] 
-          rounded-lg hover:bg-[#5865F2]/30 
-          transition-all duration-200 font-medium
-          ${sizeClasses[size]} ${className}
-        `}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        <MessageCircle className="w-4 h-4" />
+        <MessageCircle className="h-4 w-4" />
         <span>Join Discord</span>
       </motion.button>
     );
@@ -51,51 +45,55 @@ const DiscordWidget: React.FC<DiscordWidgetProps> = ({
   if (variant === 'card') {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`yieldx-card-glass p-6 rounded-xl border border-white/10 ${className}`}
+        className={`yieldx-card-glass rounded-xl border border-white/10 p-6 ${className}`}
+        initial={{ opacity: 0, y: 20 }}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-[#5865F2]/20 rounded-full flex items-center justify-center">
-            <Users className="w-6 h-6 text-[#5865F2]" />
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#5865F2]/20">
+            <Users className="h-6 w-6 text-[#5865F2]" />
           </div>
           <div>
-            <h3 className="text-white font-semibold text-lg">Join Our Community</h3>
-            <p className="text-gray-400 text-sm">Connect with other yield farmers</p>
+            <h3 className="font-semibold text-lg text-white">
+              Join Our Community
+            </h3>
+            <p className="text-gray-400 text-sm">
+              Connect with other yield farmers
+            </p>
           </div>
         </div>
-        
-        <div className="space-y-3 mb-6">
+
+        <div className="mb-6 space-y-3">
           <div className="flex items-center gap-2 text-gray-300 text-sm">
-            <Hash className="w-4 h-4 text-[#5865F2]" />
+            <Hash className="h-4 w-4 text-[#5865F2]" />
             <span>Real-time strategy discussions</span>
           </div>
           <div className="flex items-center gap-2 text-gray-300 text-sm">
-            <Volume2 className="w-4 h-4 text-[#5865F2]" />
+            <Volume2 className="h-4 w-4 text-[#5865F2]" />
             <span>Live yield farming updates</span>
           </div>
           <div className="flex items-center gap-2 text-gray-300 text-sm">
-            <MessageCircle className="w-4 h-4 text-[#5865F2]" />
+            <MessageCircle className="h-4 w-4 text-[#5865F2]" />
             <span>Community support & tips</span>
           </div>
         </div>
-        
+
         {showMemberCount && (
-          <div className="bg-[#5865F2]/10 border border-[#5865F2]/20 rounded-lg p-3 mb-4">
+          <div className="mb-4 rounded-lg border border-[#5865F2]/20 bg-[#5865F2]/10 p-3">
             <div className="flex items-center justify-between">
               <span className="text-gray-300 text-sm">Members Online</span>
-              <span className="text-[#5865F2] font-semibold">1,234</span>
+              <span className="font-semibold text-[#5865F2]">1,234</span>
             </div>
           </div>
         )}
-        
+
         <motion.button
+          className="yieldx-btn-primary w-full justify-center border-[#5865F2] bg-[#5865F2] hover:bg-[#4752C4]"
           onClick={handleJoinDiscord}
-          className="w-full yieldx-btn-primary justify-center bg-[#5865F2] hover:bg-[#4752C4] border-[#5865F2]"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
-          <MessageCircle className="w-4 h-4 mr-2" />
+          <MessageCircle className="mr-2 h-4 w-4" />
           Join Discord Server
         </motion.button>
       </motion.div>
@@ -105,16 +103,13 @@ const DiscordWidget: React.FC<DiscordWidgetProps> = ({
   // Inline variant
   return (
     <motion.a
+      className={`inline-flex items-center gap-2 text-[#5865F2] transition-colors duration-200 hover:text-[#4752C4] ${className} `}
       href={SOCIAL_LINKS.DISCORD}
-      target="_blank"
       rel="noopener noreferrer"
-      className={`
-        inline-flex items-center gap-2 text-[#5865F2] hover:text-[#4752C4] 
-        transition-colors duration-200 ${className}
-      `}
+      target="_blank"
       whileHover={{ scale: 1.05 }}
     >
-      <MessageCircle className="w-4 h-4" />
+      <MessageCircle className="h-4 w-4" />
       <span>Discord</span>
     </motion.a>
   );

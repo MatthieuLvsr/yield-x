@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface Particle {
   id: number;
@@ -25,7 +26,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
   className = '',
   variant = 'neutral',
   intensity = 0.5,
-  interactive = true
+  interactive = true,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -36,7 +37,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
   const colors = {
     profit: ['#10B981', '#00EAFF', '#40E0D0'],
     loss: ['#EF4444', '#FF6B9D', '#F97316'],
-    neutral: ['#00EAFF', '#7C3AED', '#40E0D0']
+    neutral: ['#00EAFF', '#7C3AED', '#40E0D0'],
   };
 
   const createParticle = (canvas: HTMLCanvasElement): Particle => {
@@ -50,11 +51,16 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
       life: 0,
       maxLife: 100 + Math.random() * 100,
       color: colorPalette[Math.floor(Math.random() * colorPalette.length)],
-      size: 1 + Math.random() * 3
+      size: 1 + Math.random() * 3,
     };
   };
 
-  const updateParticle = (particle: Particle, canvas: HTMLCanvasElement, mouseX: number, mouseY: number) => {
+  const updateParticle = (
+    particle: Particle,
+    canvas: HTMLCanvasElement,
+    mouseX: number,
+    mouseY: number
+  ) => {
     // Physics
     particle.x += particle.vx;
     particle.y += particle.vy;
@@ -65,7 +71,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
       const dx = mouseX - particle.x;
       const dy = mouseY - particle.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      
+
       if (distance < 100) {
         const force = (100 - distance) / 100;
         particle.vx += (dx / distance) * force * 0.1;
@@ -87,39 +93,42 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
   };
 
   const drawParticle = (ctx: CanvasRenderingContext2D, particle: Particle) => {
-    const alpha = 1 - (particle.life / particle.maxLife);
+    const alpha = 1 - particle.life / particle.maxLife;
     const size = particle.size * alpha;
-    
+
     ctx.save();
     ctx.globalAlpha = alpha * 0.8;
-    
+
     // Main particle
     ctx.fillStyle = particle.color;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, size, 0, Math.PI * 2);
     ctx.fill();
-    
+
     // Glow effect
     ctx.globalAlpha = alpha * 0.3;
     ctx.beginPath();
     ctx.arc(particle.x, particle.y, size * 2, 0, Math.PI * 2);
     ctx.fill();
-    
+
     ctx.restore();
   };
 
-  const connectParticles = (ctx: CanvasRenderingContext2D, particles: Particle[]) => {
+  const connectParticles = (
+    ctx: CanvasRenderingContext2D,
+    particles: Particle[]
+  ) => {
     const maxDistance = 120;
-    
+
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
         const dy = particles[i].y - particles[j].y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        
+
         if (distance < maxDistance) {
           const alpha = (maxDistance - distance) / maxDistance;
-          
+
           ctx.save();
           ctx.globalAlpha = alpha * 0.2;
           ctx.strokeStyle = particles[i].color;
@@ -137,7 +146,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
   const animate = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -145,7 +154,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Update and filter alive particles
-    particlesRef.current = particlesRef.current.filter(particle => 
+    particlesRef.current = particlesRef.current.filter((particle) =>
       updateParticle(particle, canvas, mouseRef.current.x, mouseRef.current.y)
     );
 
@@ -159,7 +168,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
     connectParticles(ctx, particlesRef.current);
 
     // Draw particles
-    particlesRef.current.forEach(particle => {
+    particlesRef.current.forEach((particle) => {
       drawParticle(ctx, particle);
     });
 
@@ -180,7 +189,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
       const rect = canvas.getBoundingClientRect();
       mouseRef.current = {
         x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        y: e.clientY - rect.top,
       };
     };
 
@@ -189,7 +198,7 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
 
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-    
+
     if (interactive) {
       canvas.addEventListener('mousemove', handleMouseMove);
       canvas.addEventListener('mouseenter', handleMouseEnter);
@@ -200,13 +209,13 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      
+
       if (interactive) {
         canvas.removeEventListener('mousemove', handleMouseMove);
         canvas.removeEventListener('mouseenter', handleMouseEnter);
         canvas.removeEventListener('mouseleave', handleMouseLeave);
       }
-      
+
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -215,8 +224,8 @@ const DynamicParticleSystem: React.FC<DynamicParticleSystemProps> = ({
 
   return (
     <canvas
+      className={`pointer-events-none absolute inset-0 ${className}`}
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
       style={{ mixBlendMode: 'screen' }}
     />
   );

@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import React, { useRef } from 'react';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import type React from 'react';
+import { useRef } from 'react';
 
 // Configure Highcharts for Next.js
 if (typeof Highcharts === 'object') {
   Highcharts.setOptions({
     accessibility: {
-      enabled: false
-    }
+      enabled: false,
+    },
   });
 }
 
@@ -27,8 +28,8 @@ interface PortfolioPieChartProps {
 
 const PortfolioPieChart: React.FC<PortfolioPieChartProps> = ({
   data,
-  title = "Asset Allocation",
-  height = 400
+  title = 'Asset Allocation',
+  height = 400,
 }) => {
   const chartRef = useRef<HighchartsReact.RefObject>(null);
 
@@ -36,18 +37,18 @@ const PortfolioPieChart: React.FC<PortfolioPieChartProps> = ({
     chart: {
       type: 'pie',
       backgroundColor: 'transparent',
-      height: height,
+      height,
       style: {
-        fontFamily: 'Inter, sans-serif'
-      }
+        fontFamily: 'Inter, sans-serif',
+      },
     },
     title: {
       text: title,
       style: {
         color: '#ffffff',
         fontSize: '18px',
-        fontWeight: '600'
-      }
+        fontWeight: '600',
+      },
     },
     tooltip: {
       backgroundColor: 'rgba(20, 20, 25, 0.95)',
@@ -56,14 +57,15 @@ const PortfolioPieChart: React.FC<PortfolioPieChartProps> = ({
       borderRadius: 8,
       style: {
         color: '#ffffff',
-        fontSize: '12px'
+        fontSize: '12px',
       },
-      pointFormat: '<b>{point.name}</b><br/>Value: ${point.y:,.2f}<br/>Percentage: {point.percentage:.1f}%'
+      pointFormat:
+        '<b>{point.name}</b><br/>Value: ${point.y:,.2f}<br/>Percentage: {point.percentage:.1f}%',
     },
     accessibility: {
       point: {
-        valueSuffix: '%'
-      }
+        valueSuffix: '%',
+      },
     },
     plotOptions: {
       pie: {
@@ -77,20 +79,20 @@ const PortfolioPieChart: React.FC<PortfolioPieChartProps> = ({
           style: {
             color: '#ffffff',
             fontSize: '11px',
-            textOutline: '1px rgba(0, 0, 0, 0.8)'
+            textOutline: '1px rgba(0, 0, 0, 0.8)',
           },
-          distance: 20
+          distance: 20,
         },
         showInLegend: true,
         states: {
           hover: {
             halo: {
               size: 10,
-              opacity: 0.25
-            }
-          }
-        }
-      }
+              opacity: 0.25,
+            },
+          },
+        },
+      },
     },
     legend: {
       align: 'right',
@@ -98,28 +100,30 @@ const PortfolioPieChart: React.FC<PortfolioPieChartProps> = ({
       layout: 'vertical',
       itemStyle: {
         color: 'rgba(255, 255, 255, 0.8)',
-        fontSize: '12px'
+        fontSize: '12px',
       },
       itemHoverStyle: {
-        color: '#ffffff'
-      }
+        color: '#ffffff',
+      },
     },
-    series: [{
-      type: 'pie',
-      name: 'Assets',
-      data: data.map(item => ({
-        name: item.name,
-        y: item.y,
-        color: item.color
-      }))
-    }    ],
+    series: [
+      {
+        type: 'pie',
+        name: 'Assets',
+        data: data.map((item) => ({
+          name: item.name,
+          y: item.y,
+          color: item.color,
+        })),
+      },
+    ],
     credits: {
-      enabled: false
-    }
+      enabled: false,
+    },
   };
 
   return (
-    <div className="yieldx-card-glass p-6 rounded-2xl border border-white/10">
+    <div className="yieldx-card-glass rounded-2xl border border-white/10 p-6">
       <HighchartsReact
         highcharts={Highcharts}
         options={options}

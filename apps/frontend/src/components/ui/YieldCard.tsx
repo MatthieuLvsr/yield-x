@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
+import type React from 'react';
 
 interface YieldCardProps {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ const YieldCard: React.FC<YieldCardProps> = ({
   onClick,
 }) => {
   const baseClasses = 'transition-all duration-300';
-  
+
   const variantClasses = {
     glass: 'yieldx-card-glass',
     stats: 'yieldx-card-neon',
@@ -35,8 +35,8 @@ const YieldCard: React.FC<YieldCardProps> = ({
     <Component
       className={`${baseClasses} ${variantClasses[variant]} ${hoverClasses} ${className}`}
       onClick={onClick}
+      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       whileHover={hover ? { y: -2 } : undefined}
-      transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       {children}
     </Component>

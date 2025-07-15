@@ -25,22 +25,23 @@ export interface AppConfig {
  */
 export const getAppConfig = (): AppConfig => {
   const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
-  
+
   return {
     useMockData,
     appEnv: process.env.NEXT_PUBLIC_APP_ENV || 'development',
-    mockDelay: parseInt(process.env.NEXT_PUBLIC_MOCK_DELAY || '800'),
+    mockDelay: Number.parseInt(process.env.NEXT_PUBLIC_MOCK_DELAY || '800'),
     enableDemoMode: process.env.NEXT_PUBLIC_ENABLE_DEMO_MODE === 'true',
     api: {
       baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || '',
-      wsUrl: process.env.NEXT_PUBLIC_WS_URL || ''
+      wsUrl: process.env.NEXT_PUBLIC_WS_URL || '',
     },
     solana: {
-      rpcEndpoint: process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.devnet.solana.com',
+      rpcEndpoint:
+        process.env.NEXT_PUBLIC_RPC_ENDPOINT || 'https://api.devnet.solana.com',
       network: process.env.NEXT_PUBLIC_NETWORK || 'devnet',
       programId: process.env.NEXT_PUBLIC_PROGRAM_ID || '',
-      commitment: process.env.NEXT_PUBLIC_COMMITMENT || 'confirmed'
-    }
+      commitment: process.env.NEXT_PUBLIC_COMMITMENT || 'confirmed',
+    },
   };
 };
 
@@ -88,7 +89,7 @@ export const logConfig = (): void => {
       mockDelay: config.mockDelay,
       demoMode: config.enableDemoMode,
       apiConfigured: !!config.api.baseUrl,
-      solanaNetwork: config.solana.network
+      solanaNetwork: config.solana.network,
     });
   }
 };

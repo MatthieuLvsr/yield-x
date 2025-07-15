@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpDown, Grid, List, SortAsc, SortDesc } from 'lucide-react';
+import type React from 'react';
 
 export type SortOption = 'apy' | 'tvl' | 'risk' | 'name';
 export type SortDirection = 'asc' | 'desc';
@@ -45,21 +45,19 @@ const SortAndViewControls: React.FC<SortAndViewControlsProps> = ({
     <div className="flex items-center justify-between gap-4 py-4">
       {/* Sort Controls */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-400">
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
           <ArrowUpDown size={16} />
           <span>Sort by:</span>
         </div>
         <div className="flex items-center gap-1">
           {sortOptions.map((option) => (
             <motion.button
+              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 font-medium text-sm transition-all duration-200 ${
+                sortBy === option.value
+                  ? 'border border-blue-500/30 bg-blue-500/20 text-blue-400'
+                  : 'border border-gray-700/50 bg-gray-800/40 text-gray-300 hover:bg-gray-700/60 hover:text-white'
+              } `}
               key={option.value}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
-                ${sortBy === option.value
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'bg-gray-800/40 text-gray-300 hover:bg-gray-700/60 hover:text-white border border-gray-700/50'
-                }
-              `}
               onClick={() => handleSortClick(option.value as SortOption)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -68,14 +66,14 @@ const SortAndViewControls: React.FC<SortAndViewControlsProps> = ({
               <span>{option.label}</span>
               {sortBy === option.value && (
                 <motion.div
-                  initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className="ml-1"
+                  initial={{ scale: 0 }}
                 >
                   {sortDirection === 'asc' ? (
-                    <SortAsc size={12} className="text-blue-400" />
+                    <SortAsc className="text-blue-400" size={12} />
                   ) : (
-                    <SortDesc size={12} className="text-blue-400" />
+                    <SortDesc className="text-blue-400" size={12} />
                   )}
                 </motion.div>
               )}
@@ -86,16 +84,14 @@ const SortAndViewControls: React.FC<SortAndViewControlsProps> = ({
 
       {/* View Mode Controls */}
       <div className="flex items-center gap-2">
-        <div className="text-sm text-gray-400">View:</div>
-        <div className="flex items-center gap-1 bg-gray-800/40 border border-gray-700/50 rounded-lg p-1">
+        <div className="text-gray-400 text-sm">View:</div>
+        <div className="flex items-center gap-1 rounded-lg border border-gray-700/50 bg-gray-800/40 p-1">
           <motion.button
-            className={`
-              flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200
-              ${viewMode === 'grid'
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 font-medium text-sm transition-all duration-200 ${
+              viewMode === 'grid'
                 ? 'bg-blue-500/20 text-blue-400 shadow-sm'
                 : 'text-gray-300 hover:text-white'
-              }
-            `}
+            } `}
             onClick={() => onViewModeChange('grid')}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -103,15 +99,13 @@ const SortAndViewControls: React.FC<SortAndViewControlsProps> = ({
             <Grid size={16} />
             <span>Grid</span>
           </motion.button>
-          
+
           <motion.button
-            className={`
-              flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200
-              ${viewMode === 'list'
+            className={`flex items-center gap-2 rounded-md px-3 py-1.5 font-medium text-sm transition-all duration-200 ${
+              viewMode === 'list'
                 ? 'bg-blue-500/20 text-blue-400 shadow-sm'
                 : 'text-gray-300 hover:text-white'
-              }
-            `}
+            } `}
             onClick={() => onViewModeChange('list')}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, ChangeEvent } from 'react';
+import { Filter, RotateCcw, Search } from 'lucide-react';
+import { type ChangeEvent, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Search, Filter, RotateCcw } from 'lucide-react';
-import { UserDepositsFilters } from '@/hooks/useUserDepositsPagination';
+import type { UserDepositsFilters } from '@/hooks/useUserDepositsPagination';
 
 interface UserDepositsFiltersProps {
   filters: UserDepositsFilters;
@@ -17,17 +17,18 @@ interface UserDepositsFiltersProps {
   };
 }
 
-export const UserDepositsFiltersComponent: React.FC<UserDepositsFiltersProps> = ({
-  filters,
-  onFiltersChange,
-  onResetFilters,
-  filterOptions,
-}) => {
+export const UserDepositsFiltersComponent: React.FC<
+  UserDepositsFiltersProps
+> = ({ filters, onFiltersChange, onResetFilters, filterOptions }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const activeFiltersCount = Object.values(filters).filter(value => {
+  const activeFiltersCount = Object.values(filters).filter((value) => {
     if (typeof value === 'string') return value !== 'All' && value !== '';
-    if (Array.isArray(value)) return value[0] !== filterOptions.apyRange[0] || value[1] !== filterOptions.apyRange[1];
+    if (Array.isArray(value))
+      return (
+        value[0] !== filterOptions.apyRange[0] ||
+        value[1] !== filterOptions.apyRange[1]
+      );
     return false;
   }).length;
 
@@ -40,22 +41,30 @@ export const UserDepositsFiltersComponent: React.FC<UserDepositsFiltersProps> = 
   };
 
   const handleStatusChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    onFiltersChange({ status: e.target.value as UserDepositsFilters['status'] });
+    onFiltersChange({
+      status: e.target.value as UserDepositsFilters['status'],
+    });
   };
 
   const handleStrategyChange = (e: ChangeEvent<HTMLSelectElement>) => {
     onFiltersChange({ strategy: e.target.value });
   };
 
-  const handleApyRangeChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleApyRangeChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const newRange = [...filters.apyRange] as [number, number];
-    newRange[index] = parseFloat(e.target.value);
+    newRange[index] = Number.parseFloat(e.target.value);
     onFiltersChange({ apyRange: newRange });
   };
 
-  const handleAmountRangeChange = (e: ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleAmountRangeChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const newRange = [...filters.amountRange] as [number, number];
-    newRange[index] = parseFloat(e.target.value);
+    newRange[index] = Number.parseFloat(e.target.value);
     onFiltersChange({ amountRange: newRange });
   };
 
@@ -63,27 +72,27 @@ export const UserDepositsFiltersComponent: React.FC<UserDepositsFiltersProps> = 
     <Card className="border-brand-primary/20 bg-black/40 backdrop-blur-sm">
       <div className="p-4">
         {/* Header avec bouton d'expansion */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-brand-primary" />
-            <h3 className="text-sm font-medium text-white">Filters</h3>
+            <Filter className="h-4 w-4 text-brand-primary" />
+            <h3 className="font-medium text-sm text-white">Filters</h3>
             {activeFiltersCount > 0 && (
-              <span className="px-2 py-1 text-xs bg-brand-primary/20 text-brand-primary rounded-full">
+              <span className="rounded-full bg-brand-primary/20 px-2 py-1 text-brand-primary text-xs">
                 {activeFiltersCount}
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
             <button
+              className="flex items-center gap-1 px-3 py-1 text-brand-secondary text-sm transition-colors hover:text-brand-primary"
               onClick={onResetFilters}
-              className="flex items-center gap-1 px-3 py-1 text-sm text-brand-secondary hover:text-brand-primary transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="h-4 w-4" />
               Reset
             </button>
             <button
+              className="px-3 py-1 text-brand-secondary text-sm transition-colors hover:text-brand-primary"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="px-3 py-1 text-sm text-brand-secondary hover:text-brand-primary transition-colors"
             >
               {isExpanded ? 'Less' : 'More'}
             </button>
@@ -92,37 +101,39 @@ export const UserDepositsFiltersComponent: React.FC<UserDepositsFiltersProps> = 
 
         {/* Recherche - toujours visible */}
         <div className="relative mb-4">
-          <Search className="absolute left-3 top-3 w-4 h-4 text-brand-secondary" />
+          <Search className="absolute top-3 left-3 h-4 w-4 text-brand-secondary" />
           <input
-            type="text"
-            placeholder="Search deposits..."
-            value={filters.searchTerm}
+            className="w-full rounded-lg border border-brand-primary/30 bg-black/20 py-2 pr-4 pl-10 text-white placeholder-brand-secondary focus:border-brand-primary/50 focus:outline-none"
             onChange={handleSearchChange}
-            className="w-full pl-10 pr-4 py-2 bg-black/20 border border-brand-primary/30 rounded-lg text-white placeholder-brand-secondary focus:outline-none focus:border-brand-primary/50"
+            placeholder="Search deposits..."
+            type="text"
+            value={filters.searchTerm}
           />
         </div>
 
         {/* Filtres principaux - toujours visibles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-2">
-            <label className="text-sm text-brand-secondary">Token</label>
+            <label className="text-brand-secondary text-sm">Token</label>
             <select
-              value={filters.token}
+              className="w-full rounded-lg border border-brand-primary/30 bg-black/20 px-3 py-2 text-white focus:border-brand-primary/50 focus:outline-none"
               onChange={handleTokenChange}
-              className="w-full px-3 py-2 bg-black/20 border border-brand-primary/30 rounded-lg text-white focus:outline-none focus:border-brand-primary/50"
+              value={filters.token}
             >
-              {filterOptions.tokens.map(token => (
-                <option key={token} value={token}>{token}</option>
+              {filterOptions.tokens.map((token) => (
+                <option key={token} value={token}>
+                  {token}
+                </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-brand-secondary">Status</label>
+            <label className="text-brand-secondary text-sm">Status</label>
             <select
-              value={filters.status}
+              className="w-full rounded-lg border border-brand-primary/30 bg-black/20 px-3 py-2 text-white focus:border-brand-primary/50 focus:outline-none"
               onChange={handleStatusChange}
-              className="w-full px-3 py-2 bg-black/20 border border-brand-primary/30 rounded-lg text-white focus:outline-none focus:border-brand-primary/50"
+              value={filters.status}
             >
               <option value="All">All Status</option>
               <option value="Active">Active</option>
@@ -132,45 +143,47 @@ export const UserDepositsFiltersComponent: React.FC<UserDepositsFiltersProps> = 
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-brand-secondary">Strategy</label>
+            <label className="text-brand-secondary text-sm">Strategy</label>
             <select
-              value={filters.strategy}
+              className="w-full rounded-lg border border-brand-primary/30 bg-black/20 px-3 py-2 text-white focus:border-brand-primary/50 focus:outline-none"
               onChange={handleStrategyChange}
-              className="w-full px-3 py-2 bg-black/20 border border-brand-primary/30 rounded-lg text-white focus:outline-none focus:border-brand-primary/50"
+              value={filters.strategy}
             >
-              {filterOptions.strategies.map(strategy => (
+              {filterOptions.strategies.map((strategy) => (
                 <option key={strategy} value={strategy}>
-                  {strategy === 'All' ? 'All Strategies' : `Strategy #${strategy}`}
+                  {strategy === 'All'
+                    ? 'All Strategies'
+                    : `Strategy #${strategy}`}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-brand-secondary">APY Range</label>
+            <label className="text-brand-secondary text-sm">APY Range</label>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <input
-                  type="number"
-                  min={filterOptions.apyRange[0]}
+                  className="flex-1 rounded border border-brand-primary/30 bg-black/20 px-2 py-1 text-sm text-white focus:border-brand-primary/50 focus:outline-none"
                   max={filterOptions.apyRange[1]}
-                  step={0.1}
-                  value={filters.apyRange[0]}
+                  min={filterOptions.apyRange[0]}
                   onChange={(e) => handleApyRangeChange(e, 0)}
-                  className="flex-1 px-2 py-1 bg-black/20 border border-brand-primary/30 rounded text-white text-sm focus:outline-none focus:border-brand-primary/50"
+                  step={0.1}
+                  type="number"
+                  value={filters.apyRange[0]}
                 />
                 <span className="text-brand-secondary">to</span>
                 <input
-                  type="number"
-                  min={filterOptions.apyRange[0]}
+                  className="flex-1 rounded border border-brand-primary/30 bg-black/20 px-2 py-1 text-sm text-white focus:border-brand-primary/50 focus:outline-none"
                   max={filterOptions.apyRange[1]}
-                  step={0.1}
-                  value={filters.apyRange[1]}
+                  min={filterOptions.apyRange[0]}
                   onChange={(e) => handleApyRangeChange(e, 1)}
-                  className="flex-1 px-2 py-1 bg-black/20 border border-brand-primary/30 rounded text-white text-sm focus:outline-none focus:border-brand-primary/50"
+                  step={0.1}
+                  type="number"
+                  value={filters.apyRange[1]}
                 />
               </div>
-              <div className="flex justify-between text-xs text-brand-secondary">
+              <div className="flex justify-between text-brand-secondary text-xs">
                 <span>{filters.apyRange[0].toFixed(1)}%</span>
                 <span>{filters.apyRange[1].toFixed(1)}%</span>
               </div>
@@ -180,32 +193,34 @@ export const UserDepositsFiltersComponent: React.FC<UserDepositsFiltersProps> = 
 
         {/* Filtres avancés - visibles uniquement si expanded */}
         {isExpanded && (
-          <div className="pt-4 border-t border-brand-primary/20">
+          <div className="border-brand-primary/20 border-t pt-4">
             <div className="space-y-2">
-              <label className="text-sm text-brand-secondary">Amount Range</label>
+              <label className="text-brand-secondary text-sm">
+                Amount Range
+              </label>
               <div className="space-y-2">
                 <div className="flex gap-2">
                   <input
-                    type="number"
-                    min={filterOptions.amountRange[0]}
+                    className="flex-1 rounded border border-brand-primary/30 bg-black/20 px-2 py-1 text-sm text-white focus:border-brand-primary/50 focus:outline-none"
                     max={filterOptions.amountRange[1]}
-                    step={100}
-                    value={filters.amountRange[0]}
+                    min={filterOptions.amountRange[0]}
                     onChange={(e) => handleAmountRangeChange(e, 0)}
-                    className="flex-1 px-2 py-1 bg-black/20 border border-brand-primary/30 rounded text-white text-sm focus:outline-none focus:border-brand-primary/50"
+                    step={100}
+                    type="number"
+                    value={filters.amountRange[0]}
                   />
                   <span className="text-brand-secondary">to</span>
                   <input
-                    type="number"
-                    min={filterOptions.amountRange[0]}
+                    className="flex-1 rounded border border-brand-primary/30 bg-black/20 px-2 py-1 text-sm text-white focus:border-brand-primary/50 focus:outline-none"
                     max={filterOptions.amountRange[1]}
-                    step={100}
-                    value={filters.amountRange[1]}
+                    min={filterOptions.amountRange[0]}
                     onChange={(e) => handleAmountRangeChange(e, 1)}
-                    className="flex-1 px-2 py-1 bg-black/20 border border-brand-primary/30 rounded text-white text-sm focus:outline-none focus:border-brand-primary/50"
+                    step={100}
+                    type="number"
+                    value={filters.amountRange[1]}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-brand-secondary">
+                <div className="flex justify-between text-brand-secondary text-xs">
                   <span>${filters.amountRange[0].toLocaleString()}</span>
                   <span>${filters.amountRange[1].toLocaleString()}</span>
                 </div>

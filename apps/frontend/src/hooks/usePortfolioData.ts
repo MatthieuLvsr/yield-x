@@ -3,9 +3,13 @@
  * This provides a clean abstraction for switching between demo and live data
  */
 
-import { useState, useEffect } from 'react';
-import { mockAPI, MockPortfolioStats, MockPosition } from '@/lib/mockData';
-import { isUsingMockData, isDemoModeEnabled } from '@/lib/config';
+import { useEffect, useState } from 'react';
+import { isDemoModeEnabled, isUsingMockData } from '@/lib/config';
+import {
+  type MockPortfolioStats,
+  type MockPosition,
+  mockAPI,
+} from '@/lib/mockData';
 
 interface UsePortfolioDataOptions {
   enableDemo?: boolean;
@@ -23,11 +27,17 @@ interface PortfolioData {
   refresh: () => Promise<void>;
 }
 
-export const usePortfolioData = (options: UsePortfolioDataOptions = {}): PortfolioData => {
+export const usePortfolioData = (
+  options: UsePortfolioDataOptions = {}
+): PortfolioData => {
   // Use configuration to determine default mode
   const defaultDemoMode = isUsingMockData() || isDemoModeEnabled();
-  const { enableDemo = defaultDemoMode, autoRefresh = false, refreshInterval = 30000 } = options;
-  
+  const {
+    enableDemo = defaultDemoMode,
+    autoRefresh = false,
+    refreshInterval = 30_000,
+  } = options;
+
   const [isDemoMode, setIsDemoMode] = useState(enableDemo);
   const [stats, setStats] = useState<MockPortfolioStats | null>(null);
   const [positions, setPositions] = useState<MockPosition[]>([]);
@@ -48,13 +58,15 @@ export const usePortfolioData = (options: UsePortfolioDataOptions = {}): Portfol
     try {
       const [portfolioStats, portfolioPositions] = await Promise.all([
         mockAPI.getPortfolioStats(),
-        mockAPI.getPositions()
+        mockAPI.getPositions(),
       ]);
 
       setStats(portfolioStats);
       setPositions(portfolioPositions);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load portfolio data');
+      setError(
+        err instanceof Error ? err.message : 'Failed to load portfolio data'
+      );
       console.error('Error fetching portfolio data:', err);
     } finally {
       setIsLoading(false);
@@ -76,7 +88,7 @@ export const usePortfolioData = (options: UsePortfolioDataOptions = {}): Portfol
 
   // Auto-refresh if enabled
   useEffect(() => {
-    if (!autoRefresh || !isDemoMode) return;
+    if (!(autoRefresh && isDemoMode)) return;
 
     const interval = setInterval(fetchData, refreshInterval);
     return () => clearInterval(interval);
@@ -89,26 +101,29 @@ export const usePortfolioData = (options: UsePortfolioDataOptions = {}): Portfol
     error,
     isDemoMode,
     setDemoMode,
-    refresh
+    refresh,
   };
 };
 
 /**
  * Utility function to format portfolio values for display
  */
-export const formatPortfolioValue = (value: number, currency = 'USD'): string => {
+export const formatPortfolioValue = (
+  value: number,
+  currency = 'USD'
+): string => {
   if (currency === 'USD') {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(value);
   }
-  
+
   return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 6
+    maximumFractionDigits: 6,
   }).format(value);
 };
 
@@ -116,14 +131,17 @@ export const formatPortfolioValue = (value: number, currency = 'USD'): string =>
  * Utility to calculate portfolio performance metrics
  */
 export const calculatePortfolioMetrics = (stats: MockPortfolioStats) => {
-  const roi = ((stats.totalValue - stats.totalDeposited) / stats.totalDeposited) * 100;
+  const roi =
+    ((stats.totalValue - stats.totalDeposited) / stats.totalDeposited) * 100;
   const yieldPercentage = (stats.totalRewards / stats.totalDeposited) * 100;
-  
+
   return {
     roi: roi.toFixed(2),
     yieldPercentage: yieldPercentage.toFixed(2),
     profitLoss: stats.totalValue - stats.totalDeposited,
-    profitLossFormatted: formatPortfolioValue(stats.totalValue - stats.totalDeposited)
+    profitLossFormatted: formatPortfolioValue(
+      stats.totalValue - stats.totalDeposited
+    ),
   };
 };
 
@@ -137,23 +155,23 @@ export const getPerformanceIndicators = (value: number) => {
       bgColor: 'bg-green-400/10',
       borderColor: 'border-green-400/20',
       icon: '↗',
-      trend: 'positive' as const
+      trend: 'positive' as const,
     };
-  } else if (value < 0) {
+  }
+  if (value < 0) {
     return {
       color: 'text-red-400',
       bgColor: 'bg-red-400/10',
       borderColor: 'border-red-400/20',
       icon: '↘',
-      trend: 'negative' as const
-    };
-  } else {
-    return {
-      color: 'text-gray-400',
-      bgColor: 'bg-gray-400/10',
-      borderColor: 'border-gray-400/20',
-      icon: '→',
-      trend: 'neutral' as const
+      trend: 'negative' as const,
     };
   }
+  return {
+    color: 'text-gray-400',
+    bgColor: 'bg-gray-400/10',
+    borderColor: 'border-gray-400/20',
+    icon: '→',
+    trend: 'neutral' as const,
+  };
 };

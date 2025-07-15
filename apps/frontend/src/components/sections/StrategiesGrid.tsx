@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React from 'react';
 import { motion } from 'framer-motion';
-import { FormattedStrategy } from '../../hooks/useStrategies';
+import type React from 'react';
+import type { FormattedStrategy } from '../../hooks/useStrategies';
 import { useStrategiesPagination } from '../../hooks/useStrategiesPagination';
 import StrategiesFiltersComponent from '../filters/StrategiesFilters';
 import SortAndViewControls from '../ui/SortAndViewControls';
-import YieldPagination from '../ui/YieldPagination';
 import StrategyCard from '../ui/StrategyCard';
 import StrategyListItem from '../ui/StrategyListItem';
+import YieldPagination from '../ui/YieldPagination';
 
 interface StrategiesGridProps {
   strategies: FormattedStrategy[];
@@ -54,8 +54,8 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
   };
 
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       y: 20,
       scale: 0.95,
     },
@@ -64,7 +64,7 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
       y: 0,
       scale: 1,
       transition: {
-        type: "spring",
+        type: 'spring',
         stiffness: 100,
         damping: 15,
       },
@@ -72,32 +72,33 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
   };
 
   const LoadingSkeleton = () => (
-    <div className={viewMode === 'grid' 
-      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      : "space-y-4"
-    }>
+    <div
+      className={
+        viewMode === 'grid'
+          ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+          : 'space-y-4'
+      }
+    >
       {Array.from({ length: itemsPerPage }).map((_, index) => (
         <motion.div
-          key={index}
-          className={`bg-gray-800/20 border border-gray-700/30 rounded-2xl animate-pulse
-            ${viewMode === 'grid' ? 'p-6' : 'p-4 h-24'}
-          `}
-          initial={{ opacity: 0.5 }}
           animate={{ opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
+          className={`animate-pulse rounded-2xl border border-gray-700/30 bg-gray-800/20 ${viewMode === 'grid' ? 'p-6' : 'h-24 p-4'} `}
+          initial={{ opacity: 0.5 }}
+          key={index}
+          transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
         >
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="h-6 bg-gray-700/50 rounded-lg w-24"></div>
-              <div className="h-5 bg-gray-700/50 rounded-full w-16"></div>
+              <div className="h-6 w-24 rounded-lg bg-gray-700/50" />
+              <div className="h-5 w-16 rounded-full bg-gray-700/50" />
             </div>
             {viewMode === 'grid' && (
               <>
-                <div className="h-4 bg-gray-700/50 rounded w-full"></div>
-                <div className="h-4 bg-gray-700/50 rounded w-3/4"></div>
+                <div className="h-4 w-full rounded bg-gray-700/50" />
+                <div className="h-4 w-3/4 rounded bg-gray-700/50" />
                 <div className="flex items-center justify-between">
-                  <div className="h-8 bg-gray-700/50 rounded-lg w-20"></div>
-                  <div className="h-8 bg-gray-700/50 rounded-lg w-24"></div>
+                  <div className="h-8 w-20 rounded-lg bg-gray-700/50" />
+                  <div className="h-8 w-24 rounded-lg bg-gray-700/50" />
                 </div>
               </>
             )}
@@ -109,35 +110,33 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
 
   const EmptyState = () => (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="text-center py-12"
+      className="py-12 text-center"
+      initial={{ opacity: 0, y: 20 }}
     >
-      <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-800/40 
-                      rounded-2xl border border-gray-700/30 mb-4">
-        <svg 
-          className="w-8 h-8 text-gray-400" 
-          fill="none" 
-          stroke="currentColor" 
+      <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-700/30 bg-gray-800/40">
+        <svg
+          className="h-8 w-8 text-gray-400"
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth="2" 
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+          <path
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-white mb-2">
+      <h3 className="mb-2 font-semibold text-lg text-white">
         No strategies found
       </h3>
-      <p className="text-gray-400 mb-4">
+      <p className="mb-4 text-gray-400">
         Try adjusting your filters to see more results
       </p>
       <motion.button
-        className="px-6 py-2 bg-blue-500/20 text-blue-400 border border-blue-500/30 
-                   rounded-xl hover:bg-blue-500/30 transition-all duration-200"
+        className="rounded-xl border border-blue-500/30 bg-blue-500/20 px-6 py-2 text-blue-400 transition-all duration-200 hover:bg-blue-500/30"
         onClick={resetFilters}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -151,22 +150,22 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
     <div className="space-y-6">
       {/* Filtres */}
       <StrategiesFiltersComponent
-        filters={filters}
-        onUpdateFilters={updateFilters}
-        onResetFilters={resetFilters}
         filterOptions={filterOptions}
-        totalResults={filteredStrategies.length}
+        filters={filters}
         isLoading={isLoading}
+        onResetFilters={resetFilters}
+        onUpdateFilters={updateFilters}
+        totalResults={filteredStrategies.length}
       />
 
       {/* Contrôles de tri et vue */}
       {!isLoading && filteredStrategies.length > 0 && (
         <SortAndViewControls
+          onSortChange={handleSortChange}
+          onViewModeChange={handleViewModeChange}
           sortBy={sortBy}
           sortDirection={sortDirection}
           viewMode={viewMode}
-          onSortChange={handleSortChange}
-          onViewModeChange={handleViewModeChange}
         />
       )}
 
@@ -178,34 +177,43 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
           <EmptyState />
         ) : (
           <motion.div
-            className={viewMode === 'grid' 
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              : "space-y-4"
-            }
-            variants={containerVariants}
-            initial="hidden"
             animate="visible"
-            key={`${paginationInfo.currentPage}-${viewMode}`} // Re-trigger animation on page/view change
+            className={
+              viewMode === 'grid'
+                ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
+                : 'space-y-4'
+            }
+            initial="hidden"
+            key={`${paginationInfo.currentPage}-${viewMode}`}
+            variants={containerVariants} // Re-trigger animation on page/view change
           >
             {paginatedStrategies.map((strategy, index) => (
               <motion.div
                 key={strategy.id}
                 variants={itemVariants}
-                whileHover={viewMode === 'grid' ? { 
-                  y: -5,
-                  transition: { type: "spring", stiffness: 300, damping: 20 }
-                } : undefined}
+                whileHover={
+                  viewMode === 'grid'
+                    ? {
+                        y: -5,
+                        transition: {
+                          type: 'spring',
+                          stiffness: 300,
+                          damping: 20,
+                        },
+                      }
+                    : undefined
+                }
               >
                 {viewMode === 'grid' ? (
                   <StrategyCard
-                    strategy={strategy}
                     onSelect={onStrategySelect}
+                    strategy={strategy}
                   />
                 ) : (
                   <StrategyListItem
-                    strategy={strategy}
-                    onSelect={onStrategySelect}
                     index={index}
+                    onSelect={onStrategySelect}
+                    strategy={strategy}
                   />
                 )}
               </motion.div>
@@ -218,14 +226,14 @@ const StrategiesGrid: React.FC<StrategiesGridProps> = ({
       {!isLoading && filteredStrategies.length > 0 && (
         <YieldPagination
           currentPage={paginationInfo.currentPage}
-          totalPages={paginationInfo.totalPages}
-          totalItems={paginationInfo.totalItems}
-          itemsPerPage={paginationInfo.itemsPerPage}
-          startIndex={paginationInfo.startIndex}
           endIndex={paginationInfo.endIndex}
-          onPageChange={goToPage}
+          itemsPerPage={paginationInfo.itemsPerPage}
           onNextPage={goToNextPage}
+          onPageChange={goToPage}
           onPreviousPage={goToPreviousPage}
+          startIndex={paginationInfo.startIndex}
+          totalItems={paginationInfo.totalItems}
+          totalPages={paginationInfo.totalPages}
         />
       )}
     </div>

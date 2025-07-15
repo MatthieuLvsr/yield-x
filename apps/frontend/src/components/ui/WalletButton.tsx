@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import React, { useEffect, useState } from "react";
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 const WalletButton: React.FC = () => {
   const { connected, publicKey, disconnect } = useWallet();
@@ -17,7 +18,7 @@ const WalletButton: React.FC = () => {
   if (!mounted) {
     return (
       <div className="wallet-button-custom">
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 border-none rounded-xl text-white font-medium px-6 py-2.5 transition-all duration-300">
+        <div className="rounded-xl border-none bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-2.5 font-medium text-white transition-all duration-300">
           Connect Wallet
         </div>
       </div>
@@ -28,9 +29,9 @@ const WalletButton: React.FC = () => {
     return (
       <div className="flex items-center space-x-3">
         {/* Connected wallet display */}
-        <div className="hidden sm:flex items-center space-x-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20">
-          <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
-          <span className="text-white/90 font-mono text-sm">
+        <div className="hidden items-center space-x-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-md sm:flex">
+          <div className="h-3 w-3 animate-pulse rounded-full bg-green-400" />
+          <span className="font-mono text-sm text-white/90">
             {publicKey.toString().slice(0, 4)}...
             {publicKey.toString().slice(-4)}
           </span>
@@ -38,8 +39,8 @@ const WalletButton: React.FC = () => {
 
         {/* Disconnect button */}
         <button
+          className="rounded-xl border border-red-500/30 bg-red-500/20 px-4 py-2 font-medium text-red-400 text-sm transition-all duration-300 hover:bg-red-500/30"
           onClick={disconnect}
-          className="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 transition-all duration-300 font-medium text-sm"
         >
           Disconnect
         </button>

@@ -3,8 +3,8 @@
  * This file contains extended mock data with various protocols, risks, and APYs
  */
 
-import { FormattedStrategy } from '../hooks/useStrategies';
 import { PublicKey } from '@solana/web3.js';
+import type { FormattedStrategy } from '../hooks/useStrategies';
 import { TOKEN_MINTS } from './constants';
 
 export const getMockStrategies = (): FormattedStrategy[] => {
@@ -17,10 +17,11 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       apy: 8.5,
       risk: 'Low',
       tvl: '$2.4M',
-      description: 'Conservative yield strategy with minimal risk focusing on stable returns',
+      description:
+        'Conservative yield strategy with minimal risk focusing on stable returns',
       protocol: 'Yield-X Protocol',
       lockPeriod: '30 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-2',
@@ -33,7 +34,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Earn yield by supplying USDC to Aave lending protocol',
       protocol: 'Aave',
       lockPeriod: 'Flexible',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-3',
@@ -46,7 +47,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Supply USDC to Compound protocol for steady returns',
       protocol: 'Compound',
       lockPeriod: 'Flexible',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-4',
@@ -59,7 +60,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Enhanced SOL staking with DeFi yield optimization',
       protocol: 'Yield-X Protocol',
       lockPeriod: '21 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-5',
@@ -72,7 +73,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Liquid staking for SOL with Lido protocol',
       protocol: 'Lido',
       lockPeriod: 'Flexible',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-6',
@@ -85,7 +86,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'High-yield farming strategy with RAY token rewards',
       protocol: 'Raydium',
       lockPeriod: '14 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-7',
@@ -98,7 +99,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Aggressive DeFi strategy with liquidity mining',
       protocol: 'Yield-X Protocol',
       lockPeriod: '7 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-8',
@@ -111,7 +112,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Balanced strategy combining lending and yield farming',
       protocol: 'Yield-X Protocol',
       lockPeriod: '60 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-9',
@@ -124,7 +125,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'High-yield lending protocol with terra ecosystem',
       protocol: 'Anchor',
       lockPeriod: '30 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-10',
@@ -137,7 +138,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Provide liquidity to Serum DEX for trading fees',
       protocol: 'Serum',
       lockPeriod: '14 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-11',
@@ -150,7 +151,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Concentrated liquidity provision on Orca DEX',
       protocol: 'Orca',
       lockPeriod: '21 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-12',
@@ -163,7 +164,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Leveraged trading and lending on Mango Markets',
       protocol: 'Mango',
       lockPeriod: '7 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-13',
@@ -176,7 +177,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Automated yield farming with Tulip Protocol',
       protocol: 'Tulip',
       lockPeriod: '45 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-14',
@@ -189,7 +190,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Decentralized lending protocol on Solana',
       protocol: 'Jet',
       lockPeriod: '30 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-15',
@@ -202,7 +203,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Leveraged yield farming with Francium protocol',
       protocol: 'Francium',
       lockPeriod: '14 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-16',
@@ -215,7 +216,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Liquidity mining rewards through Quarry protocol',
       protocol: 'Quarry',
       lockPeriod: '28 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-17',
@@ -228,7 +229,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Decentralized lending on Solana blockchain',
       protocol: 'Solend',
       lockPeriod: 'Flexible',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-18',
@@ -241,7 +242,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Cross-margin lending and leveraged trading',
       protocol: 'Apricot',
       lockPeriod: '21 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-19',
@@ -254,7 +255,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Concentrated liquidity AMM on Solana',
       protocol: 'Crema',
       lockPeriod: '35 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-20',
@@ -267,7 +268,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Automated options strategies for enhanced yield',
       protocol: 'Friktion',
       lockPeriod: '7 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-21',
@@ -280,7 +281,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Stable coin pools with minimal impermanent loss',
       protocol: 'Mercurial',
       lockPeriod: '30 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-22',
@@ -293,7 +294,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Decentralized perpetual futures trading',
       protocol: 'Drift',
       lockPeriod: '14 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-23',
@@ -306,7 +307,7 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Synthetic asset protocol with DeFi integration',
       protocol: 'Parrot',
       lockPeriod: '42 days',
-      publicKey: PublicKey.default
+      publicKey: PublicKey.default,
     },
     {
       id: 'mock-24',
@@ -319,8 +320,8 @@ export const getMockStrategies = (): FormattedStrategy[] => {
       description: 'Proactive market making with reduced IL',
       protocol: 'Lifinity',
       lockPeriod: '21 days',
-      publicKey: PublicKey.default
-    }
+      publicKey: PublicKey.default,
+    },
   ];
 
   return baseStrategies;

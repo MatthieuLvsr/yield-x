@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { FormattedStrategy } from './useStrategies';
+import { useEffect, useMemo, useState } from 'react';
+import type { FormattedStrategy } from './useStrategies';
 
 export interface StrategiesFilters {
   token: string;
@@ -24,7 +24,10 @@ export type SortOption = 'apy' | 'tvl' | 'risk' | 'name';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'grid' | 'list';
 
-export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPerPage: number = 9) => {
+export const useStrategiesPagination = (
+  strategies: FormattedStrategy[],
+  itemsPerPage = 9
+) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<SortOption>('apy');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -44,7 +47,7 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
 
   // Filtrer les stratégies
   const filteredStrategies = useMemo(() => {
-    return strategies.filter(strategy => {
+    return strategies.filter((strategy) => {
       // Filtre par token
       if (filters.token !== 'All' && strategy.token !== filters.token) {
         return false;
@@ -56,18 +59,31 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
       }
 
       // Filtre par APY range
-      if (strategy.apy < filters.apyRange[0] || strategy.apy > filters.apyRange[1]) {
+      if (
+        strategy.apy < filters.apyRange[0] ||
+        strategy.apy > filters.apyRange[1]
+      ) {
         return false;
       }
 
       // Filtre par protocole
-      if (filters.protocol !== 'All' && strategy.protocol !== filters.protocol) {
+      if (
+        filters.protocol !== 'All' &&
+        strategy.protocol !== filters.protocol
+      ) {
         return false;
       }
 
       // Filtre par terme de recherche
-      if (filters.searchTerm && !strategy.name.toLowerCase().includes(filters.searchTerm.toLowerCase()) &&
-          !strategy.description.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
+      if (
+        filters.searchTerm &&
+        !strategy.name
+          .toLowerCase()
+          .includes(filters.searchTerm.toLowerCase()) &&
+        !strategy.description
+          .toLowerCase()
+          .includes(filters.searchTerm.toLowerCase())
+      ) {
         return false;
       }
 
@@ -84,16 +100,18 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
         case 'apy':
           comparison = a.apy - b.apy;
           break;
-        case 'tvl':
+        case 'tvl': {
           // Convertir TVL en nombres pour la comparaison
-          const aTvl = parseFloat(a.tvl.replace(/[^0-9.-]+/g, '')) || 0;
-          const bTvl = parseFloat(b.tvl.replace(/[^0-9.-]+/g, '')) || 0;
+          const aTvl = Number.parseFloat(a.tvl.replace(/[^0-9.-]+/g, '')) || 0;
+          const bTvl = Number.parseFloat(b.tvl.replace(/[^0-9.-]+/g, '')) || 0;
           comparison = aTvl - bTvl;
           break;
-        case 'risk':
-          const riskOrder = { 'Low': 1, 'Medium': 2, 'High': 3 };
+        }
+        case 'risk': {
+          const riskOrder = { Low: 1, Medium: 2, High: 3 };
           comparison = riskOrder[a.risk] - riskOrder[b.risk];
           break;
+        }
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
@@ -133,10 +151,16 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
 
   // Obtenir les valeurs uniques pour les filtres
   const filterOptions = useMemo(() => {
-    const tokens = ['All', ...Array.from(new Set(strategies.map(s => s.token)))];
-    const protocols = ['All', ...Array.from(new Set(strategies.map(s => s.protocol)))];
-    const minApy = Math.min(...strategies.map(s => s.apy));
-    const maxApy = Math.max(...strategies.map(s => s.apy));
+    const tokens = [
+      'All',
+      ...Array.from(new Set(strategies.map((s) => s.token))),
+    ];
+    const protocols = [
+      'All',
+      ...Array.from(new Set(strategies.map((s) => s.protocol))),
+    ];
+    const minApy = Math.min(...strategies.map((s) => s.apy));
+    const maxApy = Math.max(...strategies.map((s) => s.apy));
 
     return {
       tokens,
@@ -166,7 +190,7 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
 
   // Fonctions de contrôle filtres
   const updateFilters = (newFilters: Partial<StrategiesFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
+    setFilters((prev) => ({ ...prev, ...newFilters }));
   };
 
   const resetFilters = () => {
@@ -180,7 +204,10 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
   };
 
   // Fonctions de contrôle tri
-  const handleSortChange = (newSortBy: SortOption, newDirection: SortDirection) => {
+  const handleSortChange = (
+    newSortBy: SortOption,
+    newDirection: SortDirection
+  ) => {
     setSortBy(newSortBy);
     setSortDirection(newDirection);
   };
@@ -194,26 +221,26 @@ export const useStrategiesPagination = (strategies: FormattedStrategy[], itemsPe
     // Données paginées
     paginatedStrategies,
     filteredStrategies: sortedStrategies,
-    
+
     // Informations de pagination
     paginationInfo,
-    
+
     // Contrôles de pagination
     goToPage,
     goToNextPage,
     goToPreviousPage,
-    
+
     // Filtres
     filters,
     updateFilters,
     resetFilters,
     filterOptions,
-    
+
     // Tri
     sortBy,
     sortDirection,
     handleSortChange,
-    
+
     // Vue
     viewMode,
     handleViewModeChange,
