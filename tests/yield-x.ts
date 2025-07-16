@@ -48,13 +48,17 @@ describe("yield-x", () => {
     // Generate yield token mint keypair
     const yieldTokenMint = Keypair.generate();
 
-    // Derive strategy PDA
+    const REWARD_APY = new anchor.BN(1000); // 10% APY
+
+    // Derive strategy PDA (must include reward_apy in seeds)
     const [strategyPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("strategy"), tokenMint.toBuffer()],
+      [
+        Buffer.from("strategy"),
+        tokenMint.toBuffer(),
+        Buffer.from(REWARD_APY.toArray("le", 8)),
+      ],
       program.programId
     );
-
-    const REWARD_APY = new anchor.BN(1000); // 10% APY
 
     try {
       const tx = await program.methods
@@ -125,13 +129,18 @@ describe("yield-x", () => {
 
     // Create strategy
     const yieldTokenMint = Keypair.generate();
+    const STRATEGY_APY = new anchor.BN(500); // 5% APY
     const [strategyPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from("strategy"), tokenMint.toBuffer()],
+      [
+        Buffer.from("strategy"),
+        tokenMint.toBuffer(),
+        Buffer.from(STRATEGY_APY.toArray("le", 8)),
+      ],
       program.programId
     );
 
     await program.methods
-      .createStrategy(tokenMint, new anchor.BN(500))
+      .createStrategy(tokenMint, STRATEGY_APY)
       .accountsPartial({
         tokenAddressYield: yieldTokenMint.publicKey,
         signer: wallet.publicKey,
@@ -152,9 +161,13 @@ describe("yield-x", () => {
       wallet.publicKey
     );
 
-    // Derive PDAs for deposit
+    // Derive PDAs for deposit (must include reward_apy)
     const [strategyTokenAccount] = PublicKey.findProgramAddressSync(
-      [Buffer.from("strategy_token"), tokenMint.toBuffer()],
+      [
+        Buffer.from("strategy_token"),
+        tokenMint.toBuffer(),
+        Buffer.from(STRATEGY_APY.toArray("le", 8)),
+      ],
       program.programId
     );
 
@@ -163,6 +176,7 @@ describe("yield-x", () => {
         Buffer.from("deposit"),
         wallet.publicKey.toBuffer(),
         tokenMint.toBuffer(),
+        Buffer.from(STRATEGY_APY.toArray("le", 8)),
       ],
       program.programId
     );
