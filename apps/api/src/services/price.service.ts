@@ -62,11 +62,6 @@ export const getTokenPrice = (identifier: string) => {
   return 100;
 };
 
-export const tokenAmountToDecimal = (
-  amount: bigint,
-  decimals: number
-): number => Number(amount) / 10 ** decimals;
-
 export const usdToCents = (usdAmount: number): bigint =>
   BigInt(Math.floor(usdAmount * 100));
 
@@ -76,15 +71,8 @@ export const convertToUSD = (
   decimals: number
 ) => {
   const price = getTokenPrice(tokenAddress);
-  if (price === 0) {
-    return {
-      success: false,
-      error: new Error(`No price found for token ${tokenAddress}`),
-    };
-  }
-
-  const tokenAmount = tokenAmountToDecimal(amount, decimals);
+  const tokenAmount = Number(amount) / 10 ** decimals;
   const usdValue = tokenAmount * price;
 
-  return { success: true, data: usdValue };
+  return usdValue;
 };

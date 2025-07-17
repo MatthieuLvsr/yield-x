@@ -13,7 +13,6 @@ if (!program) {
   throw new Error('Program not found');
 }
 
-// Pure function to create log message
 const createEventLog = (
   type: string,
   event: DepositEvent | RedeemEvent,
@@ -31,44 +30,36 @@ const createEventLog = (
 const updateTVLStats = async (
   usdValue: number,
   operation: 'increment' | 'decrement'
-) =>
-  prisma.stats.upsert({
-    where: { id: 'global' },
-    update: {
-      tvl: {
-        [operation]: usdToCents(usdValue),
-      },
-    },
-    create: {
-      id: 'global',
-      tvl: operation === 'increment' ? usdToCents(usdValue) : BigInt(0),
-      averageApy: 0,
-      activeUsers: 0,
-    },
-  });
-
-const handleConversionResult = (
-  result: { success: boolean; data?: number; error?: Error },
-  operation: 'increment' | 'decrement'
 ) => {
-  if (!result.success) {
-    return {
-      success: false,
-      message: `Conversion failed: ${result.error?.message}`,
-    };
+  console.log(
+    `input ${usdValue} -> op: ${operation} -> usdToCents: ${usdToCents(usdValue)}`
+  );
+
+  let stats = await prisma.stats.findUnique({ where: { id: 'global' } });
+
+  if (!stats) {
+    stats = await prisma.stats.create({
+      data: {
+        id: 'global',
+        tvl: BigInt(0),
+        averageApy: 0,
+        activeUsers: 0,
+      },
+    });
   }
 
-  const usdValue = result.data as number;
-  return updateTVLStats(usdValue, operation)
-    .then(() => ({
-      success: true,
-      message: `TVL ${operation}ed by $${usdValue.toFixed(2)}`,
-      usdValue,
-    }))
-    .catch((error) => ({
-      success: false,
-      message: `Database update failed: ${error.message}`,
-    }));
+  const changeAmount = usdToCents(usdValue);
+  const newTvl =
+    operation === 'increment'
+      ? stats.tvl + changeAmount
+      : stats.tvl - changeAmount;
+
+  return await prisma.stats.update({
+    where: { id: 'global' },
+    data: {
+      tvl: newTvl,
+    },
+  });
 };
 
 const createEventHandler =
@@ -84,26 +75,15 @@ const createEventHandler =
     );
 
     const token = await retrieveTokenFromStrategy(event.strategy.toString());
-
-    const conversionResult = convertToUSD(
+    const usdValue = convertToUSD(
       token.address,
       BigInt(amount),
       token.decimals
     );
 
-    const updateResult = await handleConversionResult(
-      conversionResult,
-      operation
-    );
-
-    if (updateResult.success) {
-      console.log(`✅ ${updateResult.message}`);
-      console.log(
-        `Converting ${amount} tokens to $${updateResult.usdValue?.toFixed(2)} USD`
-      );
-    } else {
-      console.error(`❌ ${updateResult.message}`);
-    }
+    const updatedStatsResult = await updateTVLStats(usdValue, operation);
+    console.log('updateResult -> ', updatedStatsResult);
+    console.log(`Converting ${amount} tokens to $${usdValue.toFixed(2)} USD`);
   };
 
 const handleDepositEvent = createEventHandler('increment');

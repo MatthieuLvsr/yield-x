@@ -15,6 +15,6 @@ export const statRouter = new Elysia({
     }
     return {
       ...stats,
-      tvl: Number(stats.tvl).toFixed(2),
+      tvl: (Number(stats.tvl) / 100).toFixed(2),
     };
   });
