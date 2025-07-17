@@ -1,4 +1,4 @@
-type TokenPrice = {
+type TokenInfo = {
   readonly address: string;
   readonly symbol: string;
   readonly name: string;
@@ -7,7 +7,7 @@ type TokenPrice = {
   readonly lastUpdated: Date;
 };
 
-const DEVNET_PRICES = new Map<string, TokenPrice>([
+const DEVNET_PRICES = new Map<string, TokenInfo>([
   [
     '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
     {
@@ -25,7 +25,7 @@ const DEVNET_PRICES = new Map<string, TokenPrice>([
       address: 'So11111111111111111111111111111111111111112',
       symbol: 'SOL',
       name: 'Solana',
-      price: 100.0,
+      price: 175.0,
       decimals: 9,
       lastUpdated: new Date(),
     },
@@ -41,7 +41,31 @@ const DEVNET_PRICES = new Map<string, TokenPrice>([
       lastUpdated: new Date(),
     },
   ],
+  [
+    '6STxEweKGgYcxV9PMWUPdYUNA9wxGmz8YyEGYzBu7vvA',
+    {
+      address: '6STxEweKGgYcxV9PMWUPdYUNA9wxGmz8YyEGYzBu7vvA',
+      symbol: 'TST2',
+      name: 'Test2 Token',
+      price: 42.0,
+      decimals: 9,
+      lastUpdated: new Date(),
+    },
+  ],
 ]);
+
+export const getTokenInfo = (tokenAddress: string) => {
+  if (isDevnet()) {
+    const token = DEVNET_PRICES.get(tokenAddress);
+    if (!token) {
+      throw new Error(`Token not found: ${tokenAddress}`);
+    }
+    return token;
+  }
+
+  // TODO -> fetch mainnet price
+  return DEVNET_PRICES.get('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU');
+};
 
 const getDevnetPrice = (token: string): number =>
   DEVNET_PRICES.get(token)?.price ?? 0;

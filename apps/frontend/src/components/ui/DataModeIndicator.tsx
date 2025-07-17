@@ -2,14 +2,19 @@
 
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import type React from 'react';
-import { getAppConfig, isUsingMockData } from '@/lib/config';
+import { useEffect, useState } from 'react';
+import { isUsingMockData } from '@/lib/config';
 
 const DataModeIndicator: React.FC = () => {
-  const config = getAppConfig();
-  const isMockMode = isUsingMockData();
+  const [isClient, setIsClient] = useState(false);
+  const [isMockMode, setIsMockMode] = useState(false);
 
-  // Only show in development
-  if (typeof window === 'undefined' || process.env.NODE_ENV === 'production') {
+  useEffect(() => {
+    setIsClient(true);
+    setIsMockMode(isUsingMockData());
+  }, []);
+
+  if (!isClient || process.env.NODE_ENV === 'production') {
     return null;
   }
 

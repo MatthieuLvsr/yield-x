@@ -7,17 +7,16 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
-import type React from 'react';
+import type { Stats } from '@/app/page';
 import YieldCard from '@/components/ui/YieldCard';
-import YieldLogo from '@/components/ui/YieldLogo';
 import YieldStats from '@/components/ui/YieldStats';
 import CyberLogo from '../ui/CyberLogo';
 
-const YieldProtocolOverview: React.FC = () => {
+export const YieldProtocolOverview = ({ stats }: { stats: Stats }) => {
   const protocolStats = [
     {
       title: 'Total Value Locked',
-      value: '$24.7M',
+      value: `${stats.tvl.toString()}$`,
       subtitle: 'Across all strategies',
       trend: 'up' as const,
       trendValue: '+12.5%',
@@ -25,7 +24,7 @@ const YieldProtocolOverview: React.FC = () => {
     },
     {
       title: 'Average APY',
-      value: '18.2%',
+      value: `${stats.averageApy}%`,
       subtitle: 'Weighted average',
       trend: 'up' as const,
       trendValue: '+2.1%',
@@ -33,7 +32,7 @@ const YieldProtocolOverview: React.FC = () => {
     },
     {
       title: 'Active Strategies',
-      value: '12',
+      value: stats.strategiesCount.toString(),
       subtitle: 'Live protocols',
       trend: 'neutral' as const,
       trendValue: '2 new',
@@ -41,7 +40,7 @@ const YieldProtocolOverview: React.FC = () => {
     },
     {
       title: 'Total Users',
-      value: '5,247',
+      value: stats.activeUsers.toString(),
       subtitle: 'Unique depositors',
       trend: 'up' as const,
       trendValue: '+156',
@@ -79,14 +78,12 @@ const YieldProtocolOverview: React.FC = () => {
   return (
     <section className="px-6 py-24" id="protocol">
       <div className="container mx-auto">
-        {/* Header */}
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           className="mb-16 text-center"
           initial={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.8 }}
         >
-          {/* Logo Animation avec CyberLogo hero size */}
           <motion.div
             animate={{ opacity: 1, scale: 1 }}
             className="mb-16 flex justify-center"
@@ -105,7 +102,6 @@ const YieldProtocolOverview: React.FC = () => {
           </p>
         </motion.div>
 
-        {/* Stats Grid */}
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           className="mb-20"
@@ -115,7 +111,6 @@ const YieldProtocolOverview: React.FC = () => {
           <YieldStats stats={protocolStats} />
         </motion.div>
 
-        {/* Features Grid */}
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
@@ -144,7 +139,6 @@ const YieldProtocolOverview: React.FC = () => {
           ))}
         </motion.div>
 
-        {/* Call to Action */}
         <motion.div
           animate={{ opacity: 1, y: 0 }}
           className="mt-16 text-center"
@@ -152,7 +146,6 @@ const YieldProtocolOverview: React.FC = () => {
           transition={{ duration: 0.8, delay: 0.8 }}
         >
           <div className="yieldx-card-glass relative mx-auto max-w-2xl overflow-hidden border border-white/10 p-8">
-            {/* Subtle accent */}
             <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/5 to-green-500/5" />
 
             <div className="relative z-10">
@@ -164,8 +157,12 @@ const YieldProtocolOverview: React.FC = () => {
                 with Yield-X Protocol.
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <button className="yieldx-btn-primary">Start Earning</button>
-                <button className="yieldx-btn-ghost">Learn More</button>
+                <button className="yieldx-btn-primary" type="button">
+                  Start Earning
+                </button>
+                <button className="yieldx-btn-ghost" type="button">
+                  Learn More
+                </button>
               </div>
             </div>
           </div>
@@ -174,5 +171,3 @@ const YieldProtocolOverview: React.FC = () => {
     </section>
   );
 };
-
-export default YieldProtocolOverview;

@@ -2,7 +2,11 @@ import { AnchorProvider, Program } from '@coral-xyz/anchor';
 import prisma from '../lib/prisma';
 import { convertToUSD, usdToCents } from '../services/price.service';
 import { retrieveTokenFromStrategy } from '../services/token.service';
-import type { DepositEvent, RedeemEvent } from './event.type';
+import type {
+  CreateStrategyEvent,
+  DepositEvent,
+  RedeemEvent,
+} from './event.type';
 import type { YieldApp } from './yield_app';
 import idl from './yield_app.json' with { type: 'json' };
 
@@ -27,6 +31,18 @@ const createEventLog = (
   timestamp: new Date().toISOString(),
 });
 
+const initStats = async () => {
+  return await prisma.stats.create({
+    data: {
+      id: 'global',
+      tvl: BigInt(0),
+      averageApy: 0,
+      activeUsers: 0,
+      strategiesCount: 0,
+    },
+  });
+};
+
 const updateTVLStats = async (
   usdValue: number,
   operation: 'increment' | 'decrement'
@@ -38,14 +54,7 @@ const updateTVLStats = async (
   let stats = await prisma.stats.findUnique({ where: { id: 'global' } });
 
   if (!stats) {
-    stats = await prisma.stats.create({
-      data: {
-        id: 'global',
-        tvl: BigInt(0),
-        averageApy: 0,
-        activeUsers: 0,
-      },
-    });
+    stats = await initStats();
   }
 
   const changeAmount = usdToCents(usdValue);
@@ -103,4 +112,23 @@ export const startEventListener = () => {
   // Register event handlers
   program.addEventListener('redeemEvent', handleRedeemEvent);
   program.addEventListener('depositEvent', handleDepositEvent);
+  program.addEventListener(
+    'createStrategyEvent',
+    async (event: CreateStrategyEvent) => {
+      let stats = await prisma.stats.findUnique({ where: { id: 'global' } });
+      if (!stats) {
+        stats = await initStats();
+      }
+
+      await prisma.stats.update({
+        where: { id: 'global' },
+        data: {
+          averageApy:
+            (stats.averageApy * stats.strategiesCount + event.apy) /
+            (stats.strategiesCount + 1),
+          strategiesCount: stats.strategiesCount + 1,
+        },
+      });
+    }
+  );
 };

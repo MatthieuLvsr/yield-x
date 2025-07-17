@@ -1,17 +1,23 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import type React from 'react';
 import { useState } from 'react';
+import type { Stats, Strategy } from '@/app/page';
 import {
   type FormattedStrategy,
   useStrategies,
 } from '../../hooks/useStrategies';
 import DepositModalModern from '../ui/DepositModalModern';
-import StrategiesGrid from './StrategiesGrid';
+import { StrategiesGrid } from './StrategiesGrid';
 import StrategiesHeader from './StrategiesHeader';
 
-const StrategiesSection: React.FC = () => {
+const StrategiesSection = ({
+  stats,
+  strategies: strats,
+}: {
+  stats: Stats;
+  strategies: Strategy[];
+}) => {
   const { strategies, isLoading, error, refetch } = useStrategies();
   const [selectedStrategy, setSelectedStrategy] =
     useState<FormattedStrategy | null>(null);
@@ -38,6 +44,7 @@ const StrategiesSection: React.FC = () => {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
+              <title>svg</title>
               <path
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                 strokeLinecap="round"
@@ -66,14 +73,13 @@ const StrategiesSection: React.FC = () => {
   return (
     <section className="relative px-4 py-16" id="strategies">
       <div className="container mx-auto">
-        {/* Header */}
         <StrategiesHeader
           isLoading={isLoading}
           onRefresh={refetch}
+          stats={stats}
           strategiesCount={strategies.length}
         />
 
-        {/* Strategies Grid */}
         <StrategiesGrid
           isLoading={isLoading}
           itemsPerPage={6}
@@ -81,7 +87,6 @@ const StrategiesSection: React.FC = () => {
           strategies={strategies}
         />
 
-        {/* Deposit Modal */}
         {selectedStrategy && (
           <DepositModalModern
             isOpen={isDepositModalOpen}

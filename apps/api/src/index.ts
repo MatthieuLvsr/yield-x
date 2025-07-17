@@ -3,6 +3,7 @@ import { opentelemetry } from '@elysiajs/opentelemetry';
 import { swagger } from '@elysiajs/swagger';
 import { Elysia } from 'elysia';
 import { startEventListener } from './contract/event.listener';
+import { contractRouter } from './routes/contract.route';
 import { statRouter } from './routes/stats.route';
 
 const formattedDate = () =>
@@ -65,6 +66,7 @@ const app = new Elysia()
     uptime: process.uptime(),
   }))
   .use(statRouter)
+  .use(contractRouter)
   .listen(process.env.API_PORT || 3005);
 
 export type App = typeof app;

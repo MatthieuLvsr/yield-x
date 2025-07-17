@@ -11,10 +11,11 @@ datasource db {
 }
 
 model Stats {
-  id          String   @id
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tvl         BigInt
-  averageApy  Int
-  activeUsers Int
+  id              String   @id
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tvl             BigInt
+  averageApy      Int
+  activeUsers     Int
+  strategiesCount Int
 }

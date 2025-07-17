@@ -1,7 +1,4 @@
-'use client';
-
 import { motion } from 'framer-motion';
-import type React from 'react';
 import YieldCard from '@/components/ui/YieldCard';
 
 interface StatCardProps {
@@ -14,7 +11,7 @@ interface StatCardProps {
   index?: number;
 }
 
-const StatCard: React.FC<StatCardProps> = ({
+const StatCard = ({
   title,
   value,
   subtitle,
@@ -22,7 +19,7 @@ const StatCard: React.FC<StatCardProps> = ({
   trendValue,
   variant = 'primary',
   index = 0,
-}) => {
+}: StatCardProps) => {
   const gradientClasses = {
     primary: 'yield-primary-gradient',
     secondary: 'yield-secondary-gradient',
@@ -54,7 +51,7 @@ const StatCard: React.FC<StatCardProps> = ({
             {title}
           </h3>
           <div
-            className={`font-bold text-3xl ${gradientClasses[variant]} bg-clip-text text-transparent`}
+            className={`font-bold text-3xl ${gradientClasses[variant]} bg-clip-text`}
           >
             {value}
           </div>
@@ -85,7 +82,7 @@ interface YieldStatsProps {
   className?: string;
 }
 
-const YieldStats: React.FC<YieldStatsProps> = ({ stats, className = '' }) => {
+const YieldStats = ({ stats, className = '' }: YieldStatsProps) => {
   return (
     <div
       className={`grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 ${className}`}

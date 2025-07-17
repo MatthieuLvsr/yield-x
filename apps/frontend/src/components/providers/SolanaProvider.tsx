@@ -37,7 +37,6 @@ interface SolanaProviderProps {
 }
 
 export const SolanaProvider: React.FC<SolanaProviderProps> = ({ children }) => {
-  // You can also provide a custom RPC endpoint
   const network = WalletAdapterNetwork.Devnet;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
@@ -46,9 +45,8 @@ export const SolanaProvider: React.FC<SolanaProviderProps> = ({ children }) => {
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
       new CoinbaseWalletAdapter(),
-      // new TrustWalletAdapter(),
     ],
-    [network]
+    []
   );
 
   const contextValue = useMemo(

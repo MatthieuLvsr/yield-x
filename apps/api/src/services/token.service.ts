@@ -1,17 +1,11 @@
-import {
-  deserializeMetadata,
-  findMetadataPda,
-  type Metadata,
-} from '@metaplex-foundation/mpl-token-metadata';
-import { publicKey } from '@metaplex-foundation/umi';
-import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { getMint } from '@solana/spl-token';
 import { PublicKey } from '@solana/web3.js';
 import { program } from '../contract/event.listener';
 
 export const fetchStrategyInfo = async (strategyAddress: string) => {
   const strategy = new PublicKey(strategyAddress);
-  return await program.account.strategy.fetch(strategy);
+  // biome-ignore lint/suspicious/noExplicitAny: TypeScript inference limitations with Anchor-generated types
+  return await (program.account as any).strategy.fetch(strategy);
 };
 
 export const fetchTokenInfo = async (tokenAddress: string) => {

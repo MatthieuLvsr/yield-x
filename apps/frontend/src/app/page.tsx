@@ -1,43 +1,49 @@
-'use client';
-
-import Image from 'next/image';
 import ModernHeader from '@/components/layout/ModernHeader';
 import AnalyticsSection from '@/components/sections/AnalyticsSection';
-import ModernHeroSection from '@/components/sections/ModernHeroSection';
+import { ModernHeroSection } from '@/components/sections/ModernHeroSection';
 import ModernMarketplaceSection from '@/components/sections/ModernMarketplaceSection';
 import ModernPortfolioSection from '@/components/sections/ModernPortfolioSection';
-import ModernStrategiesSection from '@/components/sections/ModernStrategiesSection';
 import StrategiesSection from '@/components/sections/StrategiesSection';
-import YieldProtocolOverview from '@/components/sections/YieldProtocolOverview';
+import { YieldProtocolOverview } from '@/components/sections/YieldProtocolOverview';
 import DataModeIndicator from '@/components/ui/DataModeIndicator';
 import DynamicBackground from '@/components/ui/DynamicBackground';
 import SectionDivider from '@/components/ui/SectionDivider';
 import SocialLinks from '@/components/ui/SocialLinks';
 import YieldLogo from '@/components/ui/YieldLogo';
-import { SOCIAL_LINKS } from '@/lib/constants';
+import { app } from '@/lib/stats.action';
 
-export default function Home() {
+export type Stats = NonNullable<
+  Awaited<ReturnType<typeof app.stats.get>>['data']
+>;
+export type Strategy = NonNullable<
+  Awaited<ReturnType<typeof app.contract.strategies.get>>['data']
+>[number];
+
+export default async function Home() {
+  const [{ data }, { data: strategies }] = await Promise.all([
+    app.stats.get(),
+    app.contract.strategies.get(),
+  ]);
+
   return (
     <main className="relative min-h-screen">
       <DynamicBackground />
       <DataModeIndicator />
       <ModernHeader />
 
-      {/* Hero Section avec padding-top ajusté pour le header plus grand */}
-      <div className="pt-10">
-        <ModernHeroSection />
-      </div>
+      <div className="pt-10">{data && <ModernHeroSection stats={data} />}</div>
 
-      {/* Espacement amélioré entre les sections */}
       <div className="py-8">
         <SectionDivider color="gradient" variant="wave" />
       </div>
-      <YieldProtocolOverview />
+      {data && <YieldProtocolOverview stats={data} />}
 
       <div className="py-8">
         <SectionDivider color="blue" variant="lightning" />
       </div>
-      <StrategiesSection />
+      {data && strategies && (
+        <StrategiesSection stats={data} strategies={strategies} />
+      )}
 
       <div className="py-8">
         <SectionDivider color="purple" variant="dots" />
@@ -54,9 +60,7 @@ export default function Home() {
       </div>
       <AnalyticsSection />
 
-      {/* Cyberpunk Footer avec plus d'espacement */}
       <footer className="relative mt-16 px-6 py-24" id="footer">
-        {/* Background avec orbes cyberpunk */}
         <div className="absolute inset-0">
           <div className="yieldx-glow-electric absolute top-1/4 left-1/4 h-96 w-96 rounded-full opacity-20 blur-3xl" />
           <div className="yieldx-glow-neon absolute right-1/4 bottom-1/4 h-80 w-80 rounded-full opacity-15 blur-3xl" />

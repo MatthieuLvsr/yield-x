@@ -3,7 +3,6 @@
 import {
   ArrowLeftIcon,
   ChartBarIcon,
-  ChevronRightIcon,
   CurrencyDollarIcon,
   ExclamationTriangleIcon,
   HomeIcon,
@@ -12,7 +11,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 
 export default function NotFound() {
   const router = useRouter();
