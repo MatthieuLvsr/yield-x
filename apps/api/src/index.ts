@@ -2,6 +2,7 @@ import { cors } from '@elysiajs/cors';
 import { opentelemetry } from '@elysiajs/opentelemetry';
 import { swagger } from '@elysiajs/swagger';
 import { Elysia } from 'elysia';
+import { startEventListener } from './contract/event.listener';
 import { statRouter } from './routes/stats.route';
 
 const formattedDate = () =>
@@ -64,10 +65,12 @@ const app = new Elysia()
     uptime: process.uptime(),
   }))
   .use(statRouter)
-  .listen(3005);
+  .listen(process.env.API_PORT || 3005);
 
 export type App = typeof app;
 
 console.log(
   `🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`
 );
+
+startEventListener();

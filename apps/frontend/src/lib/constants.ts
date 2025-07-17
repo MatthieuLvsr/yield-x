@@ -1,11 +1,8 @@
 import { PublicKey } from '@solana/web3.js';
-import { IDL } from '../types/yield_app';
 
 export const PROGRAM_ID = new PublicKey(
-  'QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk'
+  process.env.NEXT_PUBLIC_PROGRAM_ID as string
 );
-
-export { IDL };
 
 // Social Media Links
 export const SOCIAL_LINKS = {
@@ -19,7 +16,6 @@ export const SOCIAL_LINKS = {
 
 // Known token mints for the strategies
 export const TOKEN_MINTS = {
-  // Devnet addresses
   USDC: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'), // USDC devnet
   SOL: new PublicKey('So11111111111111111111111111111111111111112'), // Wrapped SOL (same for all networks)
   RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // RAY devnet (using a test token)

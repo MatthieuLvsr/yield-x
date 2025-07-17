@@ -1,5 +1,5 @@
 import { useConnection } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
 import { getMockDelay, isUsingMockData } from '../lib/config';
 import { PROGRAM_ID, TOKEN_MINTS } from '../lib/constants';
@@ -61,7 +61,7 @@ const getStrategyName = (tokenSymbol: string, apy: number): string => {
     case 'RAY':
       return 'DeFi Boost';
     default:
-      return 'Custom Strategy';
+      return `Custom Strategy ${tokenSymbol}`;
   }
 };
 
@@ -134,7 +134,6 @@ const parseStrategyAccount = (
   }
 };
 
-// Hook pour récupérer les stratégies
 export const useStrategies = () => {
   const { connection } = useConnection();
   const [strategies, setStrategies] = useState<FormattedStrategy[]>([]);
@@ -142,13 +141,13 @@ export const useStrategies = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStrategies = useCallback(async () => {
-    if (!connection) return;
+    if (!connection) {
+      return;
+    }
 
     setIsLoading(true);
-    setError(null);
 
     try {
-      // Utiliser les données mock si le mode est activé
       if (isUsingMockData()) {
         console.log('🔄 Loading mock strategies...');
 
@@ -171,8 +170,6 @@ export const useStrategies = () => {
           },
         ],
       });
-
-      console.log('Found accounts:', accounts.length);
 
       if (accounts.length === 0) {
         console.log('No strategy accounts found, using fallback strategies');
@@ -201,7 +198,7 @@ export const useStrategies = () => {
         return;
       }
 
-      // Parser et formater les stratégies
+      console.log('Found accounts:', accounts.length);
       const formattedStrategies: FormattedStrategy[] = [];
 
       for (const { pubkey, account } of accounts) {

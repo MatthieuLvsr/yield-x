@@ -14,7 +14,6 @@ declare_id!("HaegidjNb9UFKVdvRr4zj4ddgLGe6BXMLHxsVxUVndgF");
 pub mod yield_app {
     use super::*;
 
-    // Original yield farming instructions
     pub fn create_strategy(
         ctx: Context<CreateStrategy>,
         token_address: Pubkey,

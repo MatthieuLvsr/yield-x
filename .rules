@@ -12,6 +12,7 @@ Ultracite enforces strict type safety, accessibility standards, and consistent c
 - Subsecond performance
 - Maximum type safety
 - AI-friendly code generation
+- No try catch block, code should always works
 
 ## Before Writing Code
 1. Analyze existing patterns in the codebase
