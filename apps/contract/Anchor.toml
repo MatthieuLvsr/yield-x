@@ -1,0 +1,20 @@
+[toolchain]
+package_manager = "npm"
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+yield_x = "HaegidjNb9UFKVdvRr4zj4ddgLGe6BXMLHxsVxUVndgF"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

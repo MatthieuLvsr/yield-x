@@ -1,0 +1,60 @@
+import { PublicKey } from '@solana/web3.js';
+
+export const PROGRAM_ID = new PublicKey(
+  process.env.NEXT_PUBLIC_PROGRAM_ID as string
+);
+
+// Social Media Links
+export const SOCIAL_LINKS = {
+  DISCORD:
+    process.env.NEXT_PUBLIC_DISCORD_INVITE || 'https://discord.gg/yield-x',
+  TWITTER: process.env.NEXT_PUBLIC_TWITTER_URL || 'https://twitter.com/yieldx',
+  GITHUB: process.env.NEXT_PUBLIC_GITHUB_URL || 'https://github.com/yield-x',
+  DOCS: process.env.NEXT_PUBLIC_DOCS_URL || 'https://docs.yieldx.com',
+  TELEGRAM: process.env.NEXT_PUBLIC_TELEGRAM_URL || 'https://t.me/yieldx',
+};
+
+// Known token mints for the strategies
+export const TOKEN_MINTS = {
+  USDC: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'), // USDC devnet
+  SOL: new PublicKey('So11111111111111111111111111111111111111112'), // Wrapped SOL (same for all networks)
+  RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // RAY devnet (using a test token)
+
+  // Mainnet addresses (commented for reference)
+  // USDC: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'), // USDC mainnet
+  // RAY: new PublicKey('4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R'), // Raydium mainnet
+};
+
+// Strategy configurations
+export const STRATEGIES = [
+  {
+    id: '1',
+    name: 'Stable Yield',
+    token: 'USDC',
+    tokenMint: TOKEN_MINTS.USDC,
+    apy: 8.5,
+    risk: 'Low' as const,
+    lockPeriod: 30, // days
+    description: 'Conservative yield strategy with minimal risk',
+  },
+  {
+    id: '2',
+    name: 'SOL Staking Plus',
+    token: 'SOL',
+    tokenMint: TOKEN_MINTS.SOL,
+    apy: 15.2,
+    risk: 'Medium' as const,
+    lockPeriod: 60, // days
+    description: 'Enhanced SOL staking with additional yield opportunities',
+  },
+  {
+    id: '3',
+    name: 'DeFi Boost',
+    token: 'RAY',
+    tokenMint: TOKEN_MINTS.RAY,
+    apy: 24.8,
+    risk: 'High' as const,
+    lockPeriod: 90, // days
+    description: 'High-yield DeFi protocol participation',
+  },
+] as const;
