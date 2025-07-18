@@ -129,10 +129,13 @@ This will start:
 
 Solana smart contract built with Anchor framework.
 
-### Prerequisites
+## Prerequisites
 
+- [Bun](https://bun.sh/) v1.0+
+- [Node.js](https://nodejs.org/) v18+
 - [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
-- [Anchor CLI](https://www.anchor-lang.com/docs/installation)
+- [Anchor](https://www.anchor-lang.com/docs/installation) v0.28+
+- PostgreSQL 14+
 
 ### Local Development
 
