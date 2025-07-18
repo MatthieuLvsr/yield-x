@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { FormattedStrategy } from './useStrategies';
+import type { Strategy } from '@/app/page';
+import { useTokenInfosMap } from './useTokenInfosMap';
 
 export interface StrategiesFilters {
   token: string;
   risk: 'All' | 'Low' | 'Medium' | 'High';
   apyRange: [number, number];
-  protocol: string;
   searchTerm: string;
 }
 
@@ -20,12 +20,26 @@ export interface PaginationInfo {
   endIndex: number;
 }
 
-export type SortOption = 'apy' | 'tvl' | 'risk' | 'name';
+export type SortOption = 'apy' | 'risk' | 'name';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'grid' | 'list';
 
+export const getStrategyRisk = (strategy: Strategy) => {
+  let _strategyRisk: 'Low' | 'Medium' | 'High';
+
+  if (strategy.account.rewardApy > 15) {
+    _strategyRisk = 'High';
+  } else if (strategy.account.rewardApy >= 7) {
+    _strategyRisk = 'Medium';
+  } else {
+    _strategyRisk = 'Low';
+  }
+
+  return _strategyRisk;
+};
+
 export const useStrategiesPagination = (
-  strategies: FormattedStrategy[],
+  strategies: Strategy[],
   itemsPerPage = 9
 ) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -36,52 +50,42 @@ export const useStrategiesPagination = (
     token: 'All',
     risk: 'All',
     apyRange: [0, 100],
-    protocol: 'All',
     searchTerm: '',
   });
-
-  // Réinitialiser à la page 1 quand les filtres changent
+  const tokenInfos = useTokenInfosMap(strategies);
   useEffect(() => {
+    // Réinitialiser à la page 1 quand les filtres changent
     setCurrentPage(1);
   }, [filters, sortBy, sortDirection]);
 
-  // Filtrer les stratégies
+  // Filtrer les stratégies (synchroniquement)
   const filteredStrategies = useMemo(() => {
     return strategies.filter((strategy) => {
-      // Filtre par token
-      if (filters.token !== 'All' && strategy.token !== filters.token) {
+      const tokenInfo = tokenInfos[strategy.account.tokenAddress.toString()];
+
+      if (filters.token !== 'All' && tokenInfo?.name !== filters.token) {
         return false;
       }
 
-      // Filtre par niveau de risque
-      if (filters.risk !== 'All' && strategy.risk !== filters.risk) {
+      if (
+        filters.risk !== 'All' &&
+        getStrategyRisk(strategy) !== filters.risk
+      ) {
         return false;
       }
 
       // Filtre par APY range
       if (
-        strategy.apy < filters.apyRange[0] ||
-        strategy.apy > filters.apyRange[1]
+        strategy.account.rewardApy < filters.apyRange[0] ||
+        strategy.account.rewardApy > filters.apyRange[1]
       ) {
         return false;
       }
 
-      // Filtre par protocole
-      if (
-        filters.protocol !== 'All' &&
-        strategy.protocol !== filters.protocol
-      ) {
-        return false;
-      }
-
-      // Filtre par terme de recherche
       if (
         filters.searchTerm &&
-        !strategy.name
-          .toLowerCase()
-          .includes(filters.searchTerm.toLowerCase()) &&
-        !strategy.description
-          .toLowerCase()
+        !tokenInfo?.name
+          ?.toLowerCase()
           .includes(filters.searchTerm.toLowerCase())
       ) {
         return false;
@@ -89,27 +93,27 @@ export const useStrategiesPagination = (
 
       return true;
     });
-  }, [strategies, filters]);
+  }, [strategies, filters, tokenInfos]);
 
-  // Trier les stratégies filtrées
   const sortedStrategies = useMemo(() => {
     const sorted = [...filteredStrategies].sort((a, b) => {
       let comparison = 0;
 
       switch (sortBy) {
         case 'apy':
-          comparison = a.apy - b.apy;
+          comparison = a.account.rewardApy - b.account.rewardApy;
           break;
-        case 'tvl': {
-          // Convertir TVL en nombres pour la comparaison
-          const aTvl = Number.parseFloat(a.tvl.replace(/[^0-9.-]+/g, '')) || 0;
-          const bTvl = Number.parseFloat(b.tvl.replace(/[^0-9.-]+/g, '')) || 0;
-          comparison = aTvl - bTvl;
-          break;
-        }
+        // case 'tvl': {
+        //   // Convertir TVL en nombres pour la comparaison
+        //   const aTvl = Number.parseFloat(a.tvl.replace(/[^0-9.-]+/g, '')) || 0;
+        //   const bTvl = Number.parseFloat(b.tvl.replace(/[^0-9.-]+/g, '')) || 0;
+        //   comparison = aTvl - bTvl;
+        //   break;
+        // }
         case 'risk': {
           const riskOrder = { Low: 1, Medium: 2, High: 3 };
-          comparison = riskOrder[a.risk] - riskOrder[b.risk];
+          comparison =
+            riskOrder[getStrategyRisk(a)] - riskOrder[getStrategyRisk(b)];
           break;
         }
         case 'name':
@@ -153,21 +157,24 @@ export const useStrategiesPagination = (
   const filterOptions = useMemo(() => {
     const tokens = [
       'All',
-      ...Array.from(new Set(strategies.map((s) => s.token))),
-    ];
-    const protocols = [
-      'All',
-      ...Array.from(new Set(strategies.map((s) => s.protocol))),
+      ...Array.from(
+        new Set(
+          strategies.map((strategy) => {
+            const tokenInfo =
+              tokenInfos[strategy.account.tokenAddress.toString()];
+            return tokenInfo?.name || 'Unknown';
+          })
+        )
+      ),
     ];
     const minApy = Math.min(...strategies.map((s) => s.apy));
     const maxApy = Math.max(...strategies.map((s) => s.apy));
 
     return {
       tokens,
-      protocols,
       apyRange: [Math.floor(minApy), Math.ceil(maxApy)] as [number, number],
     };
-  }, [strategies]);
+  }, [strategies, tokenInfos]);
 
   // Fonctions de contrôle pagination
   const goToPage = (page: number) => {
@@ -198,7 +205,6 @@ export const useStrategiesPagination = (
       token: 'All',
       risk: 'All',
       apyRange: filterOptions.apyRange,
-      protocol: 'All',
       searchTerm: '',
     });
   };

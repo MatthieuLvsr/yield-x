@@ -2,9 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { ArrowUpDown, Grid, List, SortAsc, SortDesc } from 'lucide-react';
-import type React from 'react';
 
-export type SortOption = 'apy' | 'tvl' | 'risk' | 'name';
+export type SortOption = 'apy' | 'risk' | 'name';
 export type SortDirection = 'asc' | 'desc';
 export type ViewMode = 'grid' | 'list';
 
@@ -16,16 +15,15 @@ interface SortAndViewControlsProps {
   onViewModeChange: (mode: ViewMode) => void;
 }
 
-const SortAndViewControls: React.FC<SortAndViewControlsProps> = ({
+const SortAndViewControls = ({
   sortBy,
   sortDirection,
   viewMode,
   onSortChange,
   onViewModeChange,
-}) => {
+}: SortAndViewControlsProps) => {
   const sortOptions = [
     { value: 'apy', label: 'APY', icon: '📈' },
-    { value: 'tvl', label: 'TVL', icon: '💰' },
     { value: 'risk', label: 'Risk', icon: '🛡️' },
     { value: 'name', label: 'Name', icon: '📝' },
   ];

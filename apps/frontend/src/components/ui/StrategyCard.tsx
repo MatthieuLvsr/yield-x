@@ -1,5 +1,3 @@
-'use client';
-
 import { motion } from 'framer-motion';
 import {
   Clock,
@@ -8,16 +6,19 @@ import {
   Shield,
   TrendingUp,
 } from 'lucide-react';
-import type React from 'react';
-import type { FormattedStrategy } from '../../hooks/useStrategies';
+import type { Strategy } from '@/app/page';
+import { useTokenInfo } from '@/hooks/useStrategies';
+import { getStrategyRisk } from '@/hooks/useStrategiesPagination';
 import YieldCard from '../ui/YieldCard';
 
 interface StrategyCardProps {
-  strategy: FormattedStrategy;
-  onSelect?: (strategy: FormattedStrategy) => void;
+  strategy: Strategy;
+  onSelect?: (strategy: Strategy) => void;
 }
 
-const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onSelect }) => {
+const StrategyCard = ({ strategy, onSelect }: StrategyCardProps) => {
+  const { tokenInfo } = useTokenInfo(strategy);
+
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'Low':
@@ -58,14 +59,13 @@ const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onSelect }) => {
       variant="glass"
     >
       <div className="space-y-4 p-6">
-        {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <h3 className="mb-1 font-semibold text-lg text-white transition-colors group-hover:text-blue-400">
-              {strategy.name}
+              {tokenInfo?.symbol || 'Loading...'}
             </h3>
             <p className="line-clamp-2 text-gray-400 text-sm">
-              {strategy.description}
+              {`Win ${tokenInfo?.name || 'Loading...'}`}
             </p>
           </div>
           <motion.div
@@ -81,24 +81,22 @@ const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onSelect }) => {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/20 px-3 py-1 font-medium text-blue-400 text-sm">
               <DollarSign size={12} />
-              {strategy.token}
+              {tokenInfo?.name}
             </div>
           </div>
-          <div className="text-gray-500 text-xs">{strategy.protocol}</div>
+          <div className="text-gray-500 text-xs">Yield-X Protocol</div>
         </div>
 
         {/* Métriques principales */}
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
             <div className="mb-1 font-bold text-2xl text-white">
-              {strategy.apy.toFixed(1)}%
+              {strategy.account.rewardApy.toFixed(2)}%
             </div>
             <div className="text-gray-400 text-xs">APY</div>
           </div>
           <div className="text-center">
-            <div className="mb-1 font-semibold text-gray-300 text-lg">
-              {strategy.tvl}
-            </div>
+            <div className="mb-1 font-semibold text-gray-300 text-lg">0</div>
             <div className="text-gray-400 text-xs">TVL</div>
           </div>
         </div>
@@ -106,14 +104,14 @@ const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onSelect }) => {
         {/* Risk et Lock Period */}
         <div className="mb-4 flex items-center justify-between">
           <div
-            className={`flex items-center gap-2 rounded-full border px-3 py-1 font-medium text-sm ${getRiskColor(strategy.risk)}`}
+            className={`flex items-center gap-2 rounded-full border px-3 py-1 font-medium text-sm ${getRiskColor(getStrategyRisk(strategy))}`}
           >
-            {getRiskIcon(strategy.risk)}
-            {strategy.risk} Risk
+            {getRiskIcon(getStrategyRisk(strategy))}
+            {getStrategyRisk(strategy)} Risk
           </div>
           <div className="flex items-center gap-2 text-gray-400 text-sm">
             <Clock size={14} />
-            {strategy.lockPeriod}
+            30 Days Lock Period
           </div>
         </div>
 

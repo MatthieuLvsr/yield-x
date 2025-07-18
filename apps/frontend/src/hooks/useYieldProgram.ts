@@ -1,25 +1,29 @@
 'use client';
 
-import { AnchorProvider, BN, Program, web3 } from '@coral-xyz/anchor';
+import { AnchorProvider, BN, Program } from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram } from '@solana/web3.js';
 import { useCallback, useMemo } from 'react';
-import idl from '../idl/idl.json' with { type: 'json' };
+import type { Strategy } from '@/app/page';
+import idl from '../idl/yield_app.json' with { type: 'json' };
 import { PROGRAM_ID } from '../lib/constants';
 import {
   deriveDepositPda,
   deriveStrategyPda,
   deriveStrategyTokenAccountPda,
 } from '../lib/pda';
-import { getTokenDecimals, toTokenBaseUnits } from '../lib/tokenUtils';
+import { toTokenBaseUnits } from '../lib/tokenUtils';
+import type { TokenInfo } from './useStrategies';
 
 export const useYieldProgram = () => {
   const { connection } = useConnection();
   const wallet = useWallet();
 
   const provider = useMemo(() => {
-    if (!(wallet.publicKey && wallet.signTransaction)) return null;
+    if (!(wallet.publicKey && wallet.signTransaction)) {
+      return null;
+    }
 
     return new AnchorProvider(
       connection,
@@ -29,19 +33,22 @@ export const useYieldProgram = () => {
   }, [connection, wallet]);
 
   const program = useMemo(() => {
-    if (!provider) return null;
+    if (!provider) {
+      return null;
+    }
 
     try {
       console.log('Creating program with IDL:', typeof idl, Object.keys(idl));
       console.log('IDL programId:', idl.programId);
       console.log('Provider:', provider);
 
-      const program = new Program(idl as any, PROGRAM_ID, provider);
+      // biome-ignore lint/suspicious/noExplicitAny: osef
+      const _program = new Program(idl as any, PROGRAM_ID, provider);
       console.log(
         'Program created successfully:',
-        program.programId.toString()
+        _program.programId.toString()
       );
-      return program;
+      return _program;
     } catch (error) {
       console.error('Error creating program:', error);
       console.error(
@@ -53,65 +60,37 @@ export const useYieldProgram = () => {
   }, [provider]);
 
   const deposit = useCallback(
-    async (
-      strategyAddress: PublicKey,
-      tokenMint: PublicKey,
-      amount: number
-    ) => {
+    async (strategy: Strategy, token: TokenInfo, amount: number) => {
       if (!(program && wallet.publicKey && wallet.sendTransaction)) {
         throw new Error('Program or wallet not available');
       }
 
       try {
-        console.log('Starting deposit:', {
-          strategyAddress: strategyAddress.toString(),
-          tokenMint: tokenMint.toString(),
-          amount,
-        });
-
-        // Récupérer les données de la stratégie pour obtenir le yield token mint et l'APY
-        const strategyAccount =
-          await program.account.strategy.fetch(strategyAddress);
-        console.log('Strategy account data:', strategyAccount);
-
         const yieldTokenMint = new PublicKey(
-          (strategyAccount as any).tokenYieldAddress
+          strategy.account.tokenYieldAddress
         );
-        const apy = (strategyAccount as any).rewardApy;
-        console.log('Yield token mint:', yieldTokenMint.toString());
-        console.log('Strategy APY:', apy);
-
-        // Convertir l'APY en bytes pour le PDA
-        const apyBytes = new BN(apy).toArrayLike(Buffer, 'le', 8);
-
-        // Récupérer dynamiquement les décimales du token
-        const decimals = await getTokenDecimals(connection, tokenMint);
-        console.log('Token decimals:', decimals);
-
-        // Convertir le montant en unités de base du token
+        const tokenAddress = new PublicKey(strategy.account.tokenAddress);
+        const apy = strategy.account.rewardApy;
         const depositAmount = new BN(
-          toTokenBaseUnits(amount, decimals).toString()
+          toTokenBaseUnits(amount, token.decimals).toString()
         );
 
-        // Dériver les PDAs nécessaires avec l'APY inclus
         const depositPda = deriveDepositPda(
           wallet.publicKey,
-          tokenMint,
+          tokenAddress,
           apy,
           program.programId
         );
 
         console.log('Deposit PDA:', depositPda.toString());
 
-        // Obtenir les comptes de tokens associés
         const userTokenAccount = await getAssociatedTokenAddress(
-          tokenMint,
+          tokenAddress,
           wallet.publicKey
         );
 
-        // Calculer le strategyTokenAccount avec les bonnes seeds (incluant APY)
         const strategyTokenAccount = deriveStrategyTokenAccountPda(
-          tokenMint,
+          tokenAddress,
           apy,
           program.programId
         );
@@ -125,14 +104,14 @@ export const useYieldProgram = () => {
         try {
           await connection.getTokenAccountBalance(userYieldTokenAccount);
           console.log('User yield token account exists');
-        } catch (error) {
+        } catch {
           console.log('User yield token account will be created during mint');
         }
 
         console.log('Accounts for deposit:', {
-          strategy: strategyAddress.toString(),
+          strategy: strategy.publicKey.toString(),
           strategyTokenAccount: strategyTokenAccount.toString(),
-          tokenMint: tokenMint.toString(),
+          tokenMint: strategy.account.tokenAddress.toString(),
           deposit: depositPda.toString(),
           signer: wallet.publicKey.toString(),
           userTokenAccount: userTokenAccount.toString(),
@@ -147,9 +126,9 @@ export const useYieldProgram = () => {
         const tx = await program.methods
           .deposit(depositAmount)
           .accounts({
-            strategy: strategyAddress,
+            strategy: strategy.publicKey,
             strategyTokenAccount,
-            tokenMint,
+            tokenMint: tokenAddress,
             deposit: depositPda,
             signer: wallet.publicKey,
             userTokenAccount,
@@ -161,10 +140,14 @@ export const useYieldProgram = () => {
           })
           .transaction();
 
+        // Set the fee payer for the transaction IMMEDIATELY
+        tx.feePayer = wallet.publicKey;
+        console.log('✅ Fee payer set to:', tx.feePayer?.toString());
+
         // Ajouter l'instruction pour créer le compte yield token si nécessaire
         try {
           await connection.getTokenAccountBalance(userYieldTokenAccount);
-        } catch (error) {
+        } catch {
           console.log('Adding create ATA instruction for yield token');
           const { createAssociatedTokenAccountInstruction } = await import(
             '@solana/spl-token'
@@ -178,9 +161,66 @@ export const useYieldProgram = () => {
           tx.instructions.unshift(createATAIx);
         }
 
+        // Vérifier le solde SOL avant d'envoyer la transaction
+        console.log('🔍 Checking SOL balance before sending transaction...');
+        const balance = await connection.getBalance(wallet.publicKey);
+        console.log('💰 Current SOL balance:', balance / 1e9, 'SOL');
+
+        if (balance < 1_000_000) {
+          // 0.001 SOL minimum
+          throw new Error(
+            `Insufficient SOL balance for transaction fees. Current: ${balance / 1e9} SOL, Required: at least 0.001 SOL`
+          );
+        }
+
+        // Vérifier les détails de la transaction
+        console.log('📊 Transaction details:');
+        console.log('- Instructions count:', tx.instructions.length);
+        console.log('- Fee payer:', tx.feePayer?.toString());
+        console.log('- Recent blockhash:', tx.recentBlockhash);
+
+        // Vérifier que le fee payer est bien défini
+        if (!tx.feePayer) {
+          console.error('❌ Fee payer is still undefined! Setting it again...');
+          tx.feePayer = wallet.publicKey;
+          console.log('✅ Fee payer force-set to:', tx.feePayer?.toString());
+        }
+        // Ajouter le blockhash récent si manquant
+        if (!tx.recentBlockhash) {
+          console.log('🔄 Adding recent blockhash...');
+          const { blockhash } = await connection.getLatestBlockhash();
+          tx.recentBlockhash = blockhash;
+          console.log('✅ Recent blockhash added:', blockhash);
+        }
+
+        // Simuler la transaction avant de l'envoyer
+        console.log('🧪 Simulating transaction before sending...');
+        try {
+          const simulation = await connection.simulateTransaction(tx);
+          console.log('✅ Simulation successful:', simulation);
+
+          if (simulation.value.err) {
+            console.error('❌ Simulation failed:', simulation.value.err);
+            throw new Error(
+              `Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`
+            );
+          }
+        } catch (simError) {
+          console.error('❌ Simulation error:', simError);
+          throw new Error(`Failed to simulate transaction: ${simError}`);
+        }
+
         // Envoyer la transaction
+        console.log('📤 Sending transaction to wallet...');
+        console.log('- Wallet connected:', !!wallet.connected);
+        console.log('- Wallet public key:', wallet.publicKey?.toString());
+        console.log(
+          '- Send transaction function available:',
+          !!wallet.sendTransaction
+        );
+
         const signature = await wallet.sendTransaction(tx, connection);
-        console.log('Transaction sent:', signature);
+        console.log('✅ Transaction sent successfully:', signature);
 
         // Attendre la confirmation
         await connection.confirmTransaction(signature, 'confirmed');

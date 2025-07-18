@@ -1,7 +1,5 @@
-'use client';
-
 import { motion } from 'framer-motion';
-import type { FormattedStrategy } from '../../hooks/useStrategies';
+import type { Strategy } from '@/app/page';
 import { useStrategiesPagination } from '../../hooks/useStrategiesPagination';
 import StrategiesFiltersComponent from '../filters/StrategiesFilters';
 import SortAndViewControls from '../ui/SortAndViewControls';
@@ -10,15 +8,13 @@ import StrategyListItem from '../ui/StrategyListItem';
 import YieldPagination from '../ui/YieldPagination';
 
 interface StrategiesGridProps {
-  strategies: FormattedStrategy[];
-  isLoading?: boolean;
-  onStrategySelect?: (strategy: FormattedStrategy) => void;
+  strategies: Strategy[];
+  onStrategySelect?: (strategy: Strategy) => void;
   itemsPerPage?: number;
 }
 
 export const StrategiesGrid = ({
   strategies,
-  isLoading = false,
   onStrategySelect,
   itemsPerPage = 6,
 }: StrategiesGridProps) => {
@@ -41,12 +37,6 @@ export const StrategiesGrid = ({
   } = useStrategiesPagination(strategies, itemsPerPage);
 
   const renderContent = () => {
-    if (isLoading) {
-      return (
-        <LoadingSkeleton itemsPerPage={itemsPerPage} viewMode={viewMode} />
-      );
-    }
-
     if (filteredStrategies.length === 0) {
       return <EmptyState onResetFilters={resetFilters} />;
     }
@@ -65,7 +55,7 @@ export const StrategiesGrid = ({
       >
         {paginatedStrategies.map((strategy, index) => (
           <motion.div
-            key={strategy.id}
+            key={strategy.account.tokenYieldAddress.toString()}
             variants={itemVariants}
             whileHover={
               viewMode === 'grid'
@@ -131,14 +121,13 @@ export const StrategiesGrid = ({
       <StrategiesFiltersComponent
         filterOptions={filterOptions}
         filters={filters}
-        isLoading={isLoading}
         onResetFilters={resetFilters}
         onUpdateFilters={updateFilters}
         totalResults={filteredStrategies.length}
       />
 
       {/* Contrôles de tri et vue */}
-      {!isLoading && filteredStrategies.length > 0 && (
+      {filteredStrategies.length > 0 && (
         <SortAndViewControls
           onSortChange={handleSortChange}
           onViewModeChange={handleViewModeChange}
@@ -151,7 +140,7 @@ export const StrategiesGrid = ({
       <div className="min-h-[600px]">{renderContent()}</div>
 
       {/* Pagination */}
-      {!isLoading && filteredStrategies.length > 0 && (
+      {filteredStrategies.length > 0 && (
         <YieldPagination
           currentPage={paginationInfo.currentPage}
           endIndex={paginationInfo.endIndex}
@@ -206,54 +195,3 @@ const EmptyState = ({ onResetFilters }: { onResetFilters: () => void }) => (
     </motion.button>
   </motion.div>
 );
-
-interface LoadingSkeletonProps {
-  viewMode: 'grid' | 'list';
-  itemsPerPage: number;
-}
-
-const LoadingSkeleton = ({ viewMode, itemsPerPage }: LoadingSkeletonProps) => {
-  const containerClassName =
-    viewMode === 'grid'
-      ? 'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'
-      : 'space-y-4';
-
-  const cardClassName =
-    viewMode === 'grid'
-      ? 'animate-pulse rounded-2xl border border-gray-700/30 bg-gray-800/20 p-6'
-      : 'animate-pulse rounded-2xl border border-gray-700/30 bg-gray-800/20 h-24 p-4';
-
-  return (
-    <div className={containerClassName}>
-      {Array.from(
-        { length: itemsPerPage },
-        (_, index) => `skeleton-${Date.now()}-${index}`
-      ).map((skeletonId) => (
-        <motion.div
-          animate={{ opacity: [0.5, 0.8, 0.5] }}
-          className={cardClassName}
-          initial={{ opacity: 0.5 }}
-          key={skeletonId}
-          transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-        >
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="h-6 w-24 rounded-lg bg-gray-700/50" />
-              <div className="h-5 w-16 rounded-full bg-gray-700/50" />
-            </div>
-            {viewMode === 'grid' && (
-              <>
-                <div className="h-4 w-full rounded bg-gray-700/50" />
-                <div className="h-4 w-3/4 rounded bg-gray-700/50" />
-                <div className="flex items-center justify-between">
-                  <div className="h-8 w-20 rounded-lg bg-gray-700/50" />
-                  <div className="h-8 w-24 rounded-lg bg-gray-700/50" />
-                </div>
-              </>
-            )}
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-};
