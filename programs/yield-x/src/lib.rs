@@ -6,7 +6,7 @@ use anchor_lang::prelude::*;
 
 use state::*;
 
-declare_id!("QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk");
+declare_id!("AcRgkMywAriMws6j6rAGe6uFU1KJisdCvMuCTVN3A4hx");
 
 #[program]
 pub mod yield_app {
@@ -24,13 +24,10 @@ pub mod yield_app {
     pub fn redeem(ctx: Context<Redeem>, with_penalty: bool) -> Result<()> {
         instructions::redeem::redeem(ctx, with_penalty)
     }
-    pub fn create_market(
-        ctx: Context<CreateMarket>,
-        fee_rate: u64,
-    ) -> Result<()> {
+    pub fn create_market(ctx: Context<CreateMarket>, fee_rate: u64) -> Result<()> {
         instructions::create_market::create_market(ctx, fee_rate)
     }
-    
+
     pub fn place_order(
         ctx: Context<PlaceOrder>,
         order_type: OrderType,
@@ -39,6 +36,13 @@ pub mod yield_app {
         quantity: u64,
         expires_in_seconds: i64,
     ) -> Result<()> {
-        instructions::place_order::place_order(ctx, order_type, side, price, quantity, expires_in_seconds)
+        instructions::place_order::place_order(
+            ctx,
+            order_type,
+            side,
+            price,
+            quantity,
+            expires_in_seconds,
+        )
     }
 }

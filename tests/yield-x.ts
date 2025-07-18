@@ -1,9 +1,15 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import {
+  createAccount,
+  createMint,
+  getAccount,
+  mintTo,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
+import { assert } from "chai";
 import { YieldApp } from "../target/types/yield_app";
-import { PublicKey, Keypair, SystemProgram } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, createMint, createAccount, mintTo, getAccount, ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
-import { assert, expect } from "chai";
 
 describe("yield-x", () => {
   const provider = anchor.AnchorProvider.env();
@@ -35,7 +41,7 @@ describe("yield-x", () => {
   before(async () => {
     // Create a new user
     user = Keypair.generate();
-    
+
     // Airdrop SOL to user
     const signature = await provider.connection.requestAirdrop(
       user.publicKey,
@@ -124,10 +130,7 @@ describe("yield-x", () => {
     );
 
     [marketPda] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("market"),
-        strategyPda.toBuffer(),
-      ],
+      [Buffer.from("market"), strategyPda.toBuffer()],
       program.programId
     );
 
@@ -161,11 +164,17 @@ describe("yield-x", () => {
     // Verify the strategy was created
     const strategy = await program.account.strategy.fetch(strategyPda);
     assert.equal(strategy.tokenAddress.toString(), tokenMint.toString());
-    assert.equal(strategy.tokenYieldAddress.toString(), yieldTokenMint.toString());
+    assert.equal(
+      strategy.tokenYieldAddress.toString(),
+      yieldTokenMint.toString()
+    );
     assert.equal(strategy.rewardApy.toNumber(), rewardApy.toNumber());
     assert.isTrue(strategy.date.toNumber() > 0);
 
-    console.log("Strategy created successfully with APY:", strategy.rewardApy.toNumber());
+    console.log(
+      "Strategy created successfully with APY:",
+      strategy.rewardApy.toNumber()
+    );
   });
 
   it("Creates a user yield token account", async () => {
@@ -175,8 +184,11 @@ describe("yield-x", () => {
       yieldTokenMint,
       user.publicKey
     );
-    
-    console.log("User yield token account created:", userYieldTokenAccount.toString());
+
+    console.log(
+      "User yield token account created:",
+      userYieldTokenAccount.toString()
+    );
   });
 
   it("Makes a deposit", async () => {
@@ -208,10 +220,16 @@ describe("yield-x", () => {
     assert.isTrue(deposit.maturityDate.toNumber() > deposit.date.toNumber());
 
     // Verify yield tokens were minted to user
-    const userYieldAccount = await getAccount(provider.connection, userYieldTokenAccount);
+    const userYieldAccount = await getAccount(
+      provider.connection,
+      userYieldTokenAccount
+    );
     assert.equal(userYieldAccount.amount.toString(), depositAmount.toString());
 
-    console.log("Deposit created successfully for amount:", deposit.montant.toNumber());
+    console.log(
+      "Deposit created successfully for amount:",
+      deposit.montant.toNumber()
+    );
   });
 
   it("Creates a market", async () => {
@@ -240,7 +258,10 @@ describe("yield-x", () => {
     assert.equal(market.totalVolume.toNumber(), 0);
     assert.isTrue(market.createdAt.toNumber() > 0);
 
-    console.log("Market created successfully with fee rate:", market.feeRate.toNumber());
+    console.log(
+      "Market created successfully with fee rate:",
+      market.feeRate.toNumber()
+    );
   });
 
   it("Places a sell order", async () => {
@@ -249,34 +270,24 @@ describe("yield-x", () => {
     const expiresInSeconds = new anchor.BN(3600); // 1 hour
 
     const [orderPda] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("order"),
-        marketPda.toBuffer(),
-        user.publicKey.toBuffer(),
-      ],
+      [Buffer.from("order"), marketPda.toBuffer(), user.publicKey.toBuffer()],
       program.programId
     );
 
     const [marketTokenAccount] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("market_token"),
-        baseTokenMint.toBuffer(),
-      ],
+      [Buffer.from("market_token"), baseTokenMint.toBuffer()],
       program.programId
     );
 
     const [marketYieldAccount] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("market_yield"),
-        yieldTokenMint.toBuffer(),
-      ],
+      [Buffer.from("market_yield"), yieldTokenMint.toBuffer()],
       program.programId
     );
 
     const tx = await program.methods
       .placeOrder(
         { limit: {} }, // OrderType::Limit
-        { sell: {} },  // OrderSide::Sell
+        { sell: {} }, // OrderSide::Sell
         price,
         quantity,
         expiresInSeconds
@@ -313,15 +324,24 @@ describe("yield-x", () => {
     assert.isTrue(order.createdAt.toNumber() > 0);
     assert.isTrue(order.expiresAt.toNumber() > order.createdAt.toNumber());
 
-    console.log("Sell order placed successfully for quantity:", order.quantity.toNumber());
+    console.log(
+      "Sell order placed successfully for quantity:",
+      order.quantity.toNumber()
+    );
   });
 
   it("Redeems with penalty (early redemption)", async () => {
     // Note: We can only redeem based on the remaining yield tokens
     // The user now has 50M tokens left after placing the sell order
-    const currentYieldBalance = await getAccount(provider.connection, userYieldTokenAccount);
-    console.log("Current yield token balance before redeem:", currentYieldBalance.amount.toString());
-    
+    const currentYieldBalance = await getAccount(
+      provider.connection,
+      userYieldTokenAccount
+    );
+    console.log(
+      "Current yield token balance before redeem:",
+      currentYieldBalance.amount.toString()
+    );
+
     // Since we can't redeem the full amount (some tokens are locked in the sell order),
     // we'll expect this to fail with insufficient funds
     try {
@@ -341,8 +361,14 @@ describe("yield-x", () => {
         .rpc();
       assert.fail("Should have failed due to insufficient yield tokens");
     } catch (error) {
-      console.log("Expected error when trying to redeem with insufficient yield tokens:", error.message);
-      assert.isTrue(error.message.includes("insufficient funds") || error.message.includes("custom program error"));
+      console.log(
+        "Expected error when trying to redeem with insufficient yield tokens:",
+        error.message
+      );
+      assert.isTrue(
+        error.message.includes("insufficient funds") ||
+          error.message.includes("custom program error")
+      );
     }
   });
 
@@ -354,7 +380,7 @@ describe("yield-x", () => {
 
     // Create a second user for the buy order
     const buyer = Keypair.generate();
-    
+
     // Airdrop SOL to buyer
     const signature = await provider.connection.requestAirdrop(
       buyer.publicKey,
@@ -388,34 +414,24 @@ describe("yield-x", () => {
     );
 
     const [buyerOrderPda] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("order"),
-        marketPda.toBuffer(),
-        buyer.publicKey.toBuffer(),
-      ],
+      [Buffer.from("order"), marketPda.toBuffer(), buyer.publicKey.toBuffer()],
       program.programId
     );
 
     const [marketTokenAccount] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("market_token"),
-        baseTokenMint.toBuffer(),
-      ],
+      [Buffer.from("market_token"), baseTokenMint.toBuffer()],
       program.programId
     );
 
     const [marketYieldAccount] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("market_yield"),
-        yieldTokenMint.toBuffer(),
-      ],
+      [Buffer.from("market_yield"), yieldTokenMint.toBuffer()],
       program.programId
     );
 
     const tx = await program.methods
       .placeOrder(
         { limit: {} }, // OrderType::Limit
-        { buy: {} },   // OrderSide::Buy
+        { buy: {} }, // OrderSide::Buy
         price,
         quantity,
         expiresInSeconds
@@ -450,7 +466,10 @@ describe("yield-x", () => {
     assert.equal(order.filledQuantity.toNumber(), 0);
     assert.deepEqual(order.status, { open: {} });
 
-    console.log("Buy order placed successfully for quantity:", order.quantity.toNumber());
+    console.log(
+      "Buy order placed successfully for quantity:",
+      order.quantity.toNumber()
+    );
   });
 
   it("Fails to redeem non-existent deposit", async () => {
@@ -472,19 +491,22 @@ describe("yield-x", () => {
 
       assert.fail("Should have failed to redeem non-existent deposit");
     } catch (error) {
-      console.log("Expected error when trying to redeem non-existent deposit:", error.message);
+      console.log(
+        "Expected error when trying to redeem non-existent deposit:",
+        error.message
+      );
       assert.isTrue(
-        error.message.includes("Account does not exist") || 
-        error.message.includes("not provided") ||
-        error.message.includes("NotMatured") ||
-        error.message.includes("6002")
+        error.message.includes("Account does not exist") ||
+          error.message.includes("not provided") ||
+          error.message.includes("NotMatured") ||
+          error.message.includes("6002")
       );
     }
   });
 
   it("Fails to create strategy with same parameters", async () => {
     const duplicateYieldTokenMintKeypair = Keypair.generate();
-    
+
     try {
       await program.methods
         .createStrategy(tokenMint, rewardApy)
@@ -501,15 +523,21 @@ describe("yield-x", () => {
 
       assert.fail("Should have failed to create duplicate strategy");
     } catch (error) {
-      console.log("Expected error when creating duplicate strategy:", error.message);
-      assert.isTrue(error.message.includes("already in use") || error.message.includes("custom program error"));
+      console.log(
+        "Expected error when creating duplicate strategy:",
+        error.message
+      );
+      assert.isTrue(
+        error.message.includes("already in use") ||
+          error.message.includes("custom program error")
+      );
     }
   });
 
   it("Fails to deposit with insufficient balance", async () => {
     // Create a new strategy for this test
     const newRewardApy = new anchor.BN(1500); // 15% APY
-    
+
     const [newStrategyPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from("strategy"),
@@ -562,8 +590,13 @@ describe("yield-x", () => {
       user.publicKey
     );
 
-    const currentBalance = await getAccount(provider.connection, userTokenAccount);
-    const excessiveAmount = new anchor.BN(currentBalance.amount.toString()).add(new anchor.BN(1000000));
+    const currentBalance = await getAccount(
+      provider.connection,
+      userTokenAccount
+    );
+    const excessiveAmount = new anchor.BN(currentBalance.amount.toString()).add(
+      new anchor.BN(1000000)
+    );
 
     try {
       await program.methods
@@ -586,8 +619,14 @@ describe("yield-x", () => {
 
       assert.fail("Should have failed to deposit excessive amount");
     } catch (error) {
-      console.log("Expected error when depositing excessive amount:", error.message);
-      assert.isTrue(error.message.includes("insufficient") || error.message.includes("custom program error"));
+      console.log(
+        "Expected error when depositing excessive amount:",
+        error.message
+      );
+      assert.isTrue(
+        error.message.includes("insufficient") ||
+          error.message.includes("custom program error")
+      );
     }
   });
 });
