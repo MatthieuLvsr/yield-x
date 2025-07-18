@@ -1,110 +1,62 @@
-# Yield-X
+<div align="center">
+  <img src="apps/frontend/public/yield-x.png" alt="Yield-X Logo" width="180"/>
 
-A monorepo for the Yield-X project containing a Solana smart contract, API backend, and Next.js frontend.
+  <p>
+    <a href="https://github.com/MatthieuLvsr/yield-x/blob/develop/LICENSE">
+      <img src="https://img.shields.io/github/license/MatthieuLvsr/yield-x?color=blue" alt="License"/>
+    </a>
+    <a href="https://www.npmjs.com/package/bun">
+      <img src="https://img.shields.io/badge/Bun-v1.0+-yellow?logo=bun" alt="Bun Version"/>
+    </a>
+    <a href="https://github.com/biomejs/biome">
+      <img src="https://img.shields.io/badge/Code%20Style-Biome-green?logo=biome" alt="Code Style: Biome"/>
+    </a>
+    <a href="https://solana.com/">
+      <img src="https://img.shields.io/badge/Solana-Devnet%20Ready-3a495f?logo=solana&logoColor=white&labelColor=9945FF&color=14F195" alt="Solana Devnet Ready"/>
+    </a>
+    <a href="https://github.com/MatthieuLvsr/yield-x/releases">
+      <img src="https://img.shields.io/github/v/release/MatthieuLvsr/yield-x?display_name=tag&sort=semver" alt="Latest Release"/>
+    </a>
+  </p>
+</div>
 
-## Architecture
+# 🚀 Yield-X
+
+> 💡 **Yield-X** is an all-in-one DeFi platform: Solana smart contract, API backend, and Next.js interface.
+
+---
+
+## 🏗️ Architecture
+
+<details>
+<summary>🗺️ <b>Detailed Architecture</b></summary>
 
 ```mermaid
 graph TB
-    subgraph "Frontend (Next.js)"
-        UI[Web Interface]
-        WA[Wallet Adapter]
-        3D[3D Visualizations]
-        Charts[Charts & Analytics]
-        Hooks[React Hooks]
-    end
-
-    subgraph "API Backend (Elysia)"
-        API[REST API Server]
-        EL[Event Listener]
-        Routes[API Routes]
-        Services[Services]
-        Prisma[Prisma ORM]
-    end
-
-    subgraph "Smart Contract (Solana/Anchor)"
-        SC[Yield-X Contract]
-        Instructions[Contract Instructions]
-        States[Program States]
-        Events[Event Emissions]
-    end
-
-    subgraph "Database"
-        DB[(PostgreSQL)]
-        Stats[Statistics]
-        Migrations[Schema Migrations]
-    end
-
-    subgraph "Solana Blockchain"
-        SOL[Solana Network]
-        Tokens[SPL Tokens]
-        Wallets[User Wallets]
-        PDAs[Program Derived Accounts]
-    end
-
-    subgraph "External Services"
-        TokenAPI[Token Metadata API]
-        PriceAPI[Price Services]
-    end
-
-    %% Frontend connections
+    UI[🖥️ Web UI]
+    WA[🔑 Wallet Adapter]
+    API[🛠️ API Elysia]
+    SC[⚡ Smart Contract]
+    DB[(🗄️ PostgreSQL)]
+    SOL[💸 Solana]
+    TokenAPI[🔍 Token API]
+    PriceAPI[💱 Price API]
     UI --> WA
     UI --> API
     WA --> SOL
-    Hooks --> API
-    Hooks --> SC
-
-    %% API connections
-    API --> Routes
-    API --> Services
-    Routes --> Prisma
-    EL --> SC
-    EL --> Events
-    EL --> Prisma
-    Services --> TokenAPI
-    Services --> PriceAPI
-
-    %% Database connections
-    Prisma --> DB
-    Stats --> DB
-    Migrations --> DB
-
-    %% Smart contract connections
-    SC --> Instructions
-    SC --> States
-    SC --> Events
+    API --> SC
+    API --> DB
     SC --> SOL
-    Instructions --> PDAs
-    States --> Tokens
-
-    %% Blockchain connections
-    SOL --> Tokens
-    SOL --> Wallets
-    SOL --> PDAs
-
-    %% Data flow
-    UI -.->|User Actions| WA
-    WA -.->|Transactions| SC
-    SC -.->|Events| EL
-    EL -.->|Updates| Stats
-    API -.->|Analytics| UI
-
-    classDef frontend fill:#e1f5fe
-    classDef backend fill:#e8f5e8
-    classDef contract fill:#fff3e0
-    classDef database fill:#f3e5f5
-    classDef blockchain fill:#e3f2fd
-    classDef external fill:#fce4ec
-
-    class UI,WA,3D,Charts,Hooks frontend
-    class API,EL,Routes,Services,Prisma backend
-    class SC,Instructions,States,Events contract
-    class DB,Stats,Migrations database
-    class SOL,Tokens,Wallets,PDAs blockchain
-    class TokenAPI,PriceAPI external
+    API --> TokenAPI
+    API --> PriceAPI
+    SOL --> DB
 ```
 
-## Quick Start
+</details>
+
+---
+
+## ⚡ Quick Start
 
 Install dependencies and start all services:
 
@@ -115,27 +67,33 @@ bun dev
 
 This will start:
 
-- API server with Prisma Studio
-- Frontend development server
-- Database migrations
+- 🛠️ API server with Prisma Studio
+- 🖥️ Frontend development server
+- 🗄️ Database migrations
 
-## Project Structure
+---
 
-- `apps/contract` - Solana smart contract (Anchor framework)
-- `apps/api` - Backend API (Elysia + Prisma)
-- `apps/frontend` - Web interface (Next.js + React)
+## 🗂️ Project Structure
 
-## apps/contract
+- `apps/contract` — ⚡ Solana smart contract (Anchor)
+- `apps/api` — 🛠️ Backend API (Elysia + Prisma)
+- `apps/frontend` — 🖥️ Web interface (Next.js + React)
+
+---
+
+## ⚡ apps/contract
 
 Solana smart contract built with Anchor framework.
 
-## Prerequisites
+---
 
-- [Bun](https://bun.sh/) v1.0+
-- [Node.js](https://nodejs.org/) v18+
-- [Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
-- [Anchor](https://www.anchor-lang.com/docs/installation) v0.28+
-- PostgreSQL 14+
+## 🧰 Prerequisites
+
+- [🍞 Bun](https://bun.sh/) v1.0+
+- [🟩 Node.js](https://nodejs.org/) v18+
+- [💸 Solana CLI](https://docs.solana.com/cli/install-solana-cli-tools)
+- [⚓ Anchor](https://www.anchor-lang.com/docs/installation) v0.28+
+- [🗄️ PostgreSQL 14+](https://www.postgresql.org/)
 
 ### Local Development
 
@@ -256,6 +214,34 @@ Features:
 - Interactive charts with Highcharts
 - Responsive design with Tailwind CSS
 - Component library with Radix UI
+
+---
+
+## 🗺️ Infrastructure Overview
+
+```mermaid
+flowchart TD
+    subgraph Cloud
+        CDN[CDN / Static Hosting]
+        API[API Server (Elysia)]
+        DB[(PostgreSQL DB)]
+    end
+    subgraph Blockchain
+        Solana[Solana Cluster]
+        Validator[Local Validator]
+    end
+    subgraph Frontend
+        Browser[User Browser]
+        Wallet[Solana Wallet]
+    end
+    Browser -- "HTTPS" --> CDN
+    Browser -- "API Calls" --> API
+    API -- "DB Queries" --> DB
+    API -- "RPC" --> Solana
+    Wallet -- "Sign Tx" --> Solana
+    Validator -.-> Solana
+    CDN -- "Deploy" --> Frontend
+```
 
 ## Development
 
