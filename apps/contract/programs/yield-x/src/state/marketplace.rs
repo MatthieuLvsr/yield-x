@@ -12,6 +12,7 @@ pub struct Market {
 }
 
 #[account]
+#[derive(InitSpace)]
 pub struct Order {
     pub market: Pubkey,
     pub owner: Pubkey,
@@ -25,19 +26,19 @@ pub struct Order {
     pub expires_at: i64,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
 pub enum OrderType {
     Market,
     Limit,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
 pub enum OrderSide {
     Buy,
     Sell,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq, InitSpace)]
 pub enum OrderStatus {
     Open,
     PartiallyFilled,

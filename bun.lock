@@ -29,7 +29,6 @@
     },
     "apps/contract": {
       "name": "@yield-x/contract",
-      "version": "1.0.0",
       "dependencies": {
         "@coral-xyz/anchor": "0.31.1",
         "@solana/spl-token": "0.4.13",
@@ -41,7 +40,9 @@
         "@types/mocha": "^9.0.0",
         "chai": "^4.3.4",
         "mocha": "^9.0.3",
+        "prettier": "^2.6.2",
         "ts-mocha": "^10.0.0",
+        "typescript": "^5.7.3",
       },
     },
     "apps/frontend": {
@@ -2152,6 +2153,8 @@
     "postprocessing": ["postprocessing@6.37.6", "", { "peerDependencies": { "three": ">= 0.157.0 < 0.179.0" } }, "sha512-KrdKLf1257RkoIk3z3nhRS0aToKrX2xJgtR0lbnOQUjd+1I4GVNv1gQYsQlfRglvEXjpzrwqOA5fXfoDBimadg=="],
 
     "potpack": ["potpack@1.0.2", "", {}, "sha512-choctRBIV9EMT9WGAZHn3V7t0Z2pMQyl0EZE6pFc/6ml3ssw7Dlf/oAOvFwjm1HVsqfQN8GfeFyJ+d8tRzqueQ=="],
+
+    "prettier": ["prettier@2.8.8", "", { "bin": { "prettier": "bin-prettier.js" } }, "sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q=="],
 
     "pretty-format": ["pretty-format@29.7.0", "", { "dependencies": { "@jest/schemas": "^29.6.3", "ansi-styles": "^5.0.0", "react-is": "^18.0.0" } }, "sha512-Pdlw/oPxN+aXdmM9R00JVC9WVFoCLTKJvDVLgmJ+qAffBMxsV85l/Lu7sNx4zSzPyoL2euImuEwHhOXdEgNFZQ=="],
 

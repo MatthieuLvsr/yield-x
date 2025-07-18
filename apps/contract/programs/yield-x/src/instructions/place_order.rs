@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Transfer};
-use crate::state::{PlaceOrder, PlaceOrderEvent, OrderType, OrderSide, OrderStatus};
 use crate::errors::CustomError;
+use crate::state::{OrderSide, OrderStatus, OrderType, PlaceOrder, PlaceOrderEvent};
 
 pub fn place_order(
     ctx: Context<PlaceOrder>,
@@ -36,8 +36,8 @@ pub fn place_order(
                 CpiContext::new(
                     ctx.accounts.token_program.to_account_info(),
                     Transfer {
-                        from: ctx.accounts.owner_token_account.to_account_info(),
-                        to: ctx.accounts.escrow_token_account.to_account_info(),
+                        from: ctx.accounts.user_yield_account.to_account_info(),
+                        to: ctx.accounts.market_yield_account.to_account_info(),
                         authority: ctx.accounts.owner.to_account_info(),
                     },
                 ),
@@ -46,19 +46,20 @@ pub fn place_order(
         }
         OrderSide::Buy => {
             // For buy orders, transfer base tokens to escrow
-            let total_cost = price.checked_mul(quantity)
+            let total_cost = price
+                .checked_mul(quantity)
                 .ok_or(CustomError::InvalidOrderParameters)?;
             transfer(
-                CpiContext::new(
-                    ctx.accounts.token_program.to_account_info(),
-                    Transfer {
-                        from: ctx.accounts.owner_token_account.to_account_info(),
-                        to: ctx.accounts.escrow_token_account.to_account_info(),
-                        authority: ctx.accounts.owner.to_account_info(),
-                    },
-                ),
-                total_cost,
-            )?;
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.user_token_account.to_account_info(),
+                to: ctx.accounts.market_token_account.to_account_info(),
+                authority: ctx.accounts.owner.to_account_info(),
+            },
+        ),
+        total_cost,
+    )?;
         }
     }
 

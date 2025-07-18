@@ -1,5 +1,3 @@
-#![allow(deprecated)]
-
 mod errors;
 mod instructions;
 mod state;
@@ -8,12 +6,11 @@ use anchor_lang::prelude::*;
 
 use state::*;
 
-declare_id!("HaegidjNb9UFKVdvRr4zj4ddgLGe6BXMLHxsVxUVndgF");
+declare_id!("AcRgkMywAriMws6j6rAGe6uFU1KJisdCvMuCTVN3A4hx");
 
 #[program]
 pub mod yield_app {
     use super::*;
-
     pub fn create_strategy(
         ctx: Context<CreateStrategy>,
         token_address: Pubkey,
@@ -21,16 +18,12 @@ pub mod yield_app {
     ) -> Result<()> {
         instructions::create_strategy::create_strategy(ctx, token_address, reward_apy)
     }
-
     pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         instructions::deposit::deposit(ctx, amount)
     }
-
     pub fn redeem(ctx: Context<Redeem>, with_penalty: bool) -> Result<()> {
         instructions::redeem::redeem(ctx, with_penalty)
     }
-
-    // Marketplace instructions for YT trading
     pub fn create_market(ctx: Context<CreateMarket>, fee_rate: u64) -> Result<()> {
         instructions::create_market::create_market(ctx, fee_rate)
     }
@@ -51,13 +44,5 @@ pub mod yield_app {
             quantity,
             expires_in_seconds,
         )
-    }
-
-    pub fn execute_trade(ctx: Context<ExecuteTrade>, trade_quantity: u64) -> Result<()> {
-        instructions::execute_trade::execute_trade(ctx, trade_quantity)
-    }
-
-    pub fn cancel_order(ctx: Context<CancelOrder>) -> Result<()> {
-        instructions::cancel_order::cancel_order(ctx)
     }
 }
