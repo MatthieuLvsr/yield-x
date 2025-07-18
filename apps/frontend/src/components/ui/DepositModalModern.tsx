@@ -1,173 +1,95 @@
-'use client';
-
-import {
-  getAccount,
-  getAssociatedTokenAddress,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import {
-  LAMPORTS_PER_SOL,
-  type PublicKey,
-  SystemProgram,
-  Transaction,
-} from '@solana/web3.js';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { AnimatePresence, motion } from 'framer-motion';
-import type React from 'react';
 import { useEffect, useState } from 'react';
-import type { FormattedStrategy } from '../../hooks/useStrategies';
+import type { Strategy } from '@/app/page';
+import { type TokenInfo, useTokenInfo } from '@/hooks/useStrategies';
+import { getStrategyRisk } from '@/hooks/useStrategiesPagination';
+import { getTokenBalance } from '@/lib/api.client';
 import { useYieldProgram } from '../../hooks/useYieldProgram';
-import { PROGRAM_ID, TOKEN_MINTS } from '../../lib/constants';
 
 interface DepositModalProps {
   isOpen: boolean;
   onClose: () => void;
-  strategy: FormattedStrategy;
+  strategy: Strategy;
 }
 
-const DepositModal: React.FC<DepositModalProps> = ({
+export const DepositModal = ({
   isOpen,
   onClose,
   strategy,
-}) => {
+}: DepositModalProps) => {
   const [amount, setAmount] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
-  const {
-    publicKey,
-    sendTransaction,
-    connected,
-    wallets,
-    select,
-    signTransaction,
-  } = useWallet();
+  const { publicKey, connected, wallets } = useWallet();
   const { connection } = useConnection();
   const { deposit, isReady } = useYieldProgram();
+  const { tokenInfo } = useTokenInfo(strategy);
 
-  // Function to get token mint address
-  const getTokenMint = (tokenSymbol: string): PublicKey | null => {
-    const tokenMintKey = tokenSymbol as keyof typeof TOKEN_MINTS;
-    return TOKEN_MINTS[tokenMintKey] || strategy.tokenMint || null;
-  };
-
-  // Function to fetch user balance
-  const fetchBalance = async () => {
-    if (!(publicKey && connected)) {
+  const fetchBalance = async (token: TokenInfo) => {
+    if (!(publicKey && connected && token)) {
       console.log('Wallet not connected, setting balance to null');
       setBalance(null);
       return;
     }
-
-    console.log(
-      'Fetching balance for token:',
-      strategy.token,
-      'wallet:',
-      publicKey.toString()
-    );
     setIsLoadingBalance(true);
 
     try {
-      const tokenMint = getTokenMint(strategy.token);
-
-      if (!tokenMint) {
-        console.warn(`Token mint not found for ${strategy.token}`);
-        setBalance(0);
-        setIsLoadingBalance(false);
-        return;
-      }
-
-      console.log('Using token mint:', tokenMint.toString());
-
-      // Handle SOL balance
-      if (strategy.token === 'SOL') {
-        console.log('Fetching SOL balance...');
+      if (token.symbol === 'SOL') {
         const solBalance = await connection.getBalance(publicKey);
         const balanceInSol = solBalance / LAMPORTS_PER_SOL;
-        console.log('SOL balance fetched:', balanceInSol);
         setBalance(balanceInSol);
         setIsLoadingBalance(false);
         return;
       }
 
-      // Handle SPL token balance
-      try {
-        console.log('Fetching SPL token balance...');
-        const associatedTokenAddress = await getAssociatedTokenAddress(
-          tokenMint,
-          publicKey
-        );
+      const tokenBalance = await getTokenBalance(
+        token.address,
+        publicKey.toString()
+      );
 
-        console.log(
-          'Associated token address:',
-          associatedTokenAddress.toString()
-        );
-
-        const tokenAccount = await getAccount(
-          connection,
-          associatedTokenAddress,
-          'confirmed',
-          TOKEN_PROGRAM_ID
-        );
-
-        // Convert balance based on token decimals (assuming 6 decimals for USDC, 9 for others)
-        const decimals = strategy.token === 'USDC' ? 6 : 9;
-        const balance = Number(tokenAccount.amount) / 10 ** decimals;
-        console.log('SPL token balance fetched:', balance);
-        setBalance(balance);
-      } catch (error) {
-        // If account doesn't exist, balance is 0
-        console.log(
-          `No token account found for ${strategy.token}, balance is 0`,
-          error
-        );
+      if (tokenBalance !== null) {
+        setBalance(tokenBalance);
+      } else {
         setBalance(0);
       }
     } catch (error) {
       console.error('Error fetching balance:', error);
       setBalance(0);
-    } finally {
-      setIsLoadingBalance(false);
     }
+    setIsLoadingBalance(false);
   };
 
-  // Fetch balance when wallet connects or modal opens
   useEffect(() => {
-    console.log('useEffect triggered:', {
-      isOpen,
-      connected,
-      publicKey: publicKey?.toString(),
-      token: strategy.token,
-    });
-    if (isOpen && connected && publicKey) {
-      fetchBalance();
-    } else if (!connected) {
-      setBalance(null);
+    if (isOpen && connected && publicKey && tokenInfo) {
+      fetchBalance(tokenInfo);
     }
-  }, [isOpen, connected, publicKey, strategy.token, connection]);
+    setBalance(null);
+  }, [isOpen, connected, publicKey, tokenInfo]);
 
   const handleDeposit = async () => {
-    if (!(publicKey && amount && isReady)) return;
+    console.log(publicKey);
+    console.log(amount);
+    console.log(isReady);
+    if (!(publicKey && amount && isReady && tokenInfo)) {
+      return;
+    }
 
     setIsLoading(true);
     try {
-      console.log('Calling deposit with:', {
-        strategyAddress: strategy.publicKey.toString(),
-        tokenMint: strategy.tokenMint.toString(),
-        amount: Number.parseFloat(amount),
-      });
-
       const result = await deposit(
-        strategy.publicKey,
-        strategy.tokenMint,
+        strategy,
+        tokenInfo,
         Number.parseFloat(amount)
       );
 
       console.log('Deposit successful:', result);
-
-      // Show success message
-      alert(`Successfully deposited ${amount} ${strategy.token}!`);
+      alert(
+        `Successfully deposited ${amount} -> ${strategy.account.tokenAddress.toString()}!`
+      );
       onClose();
       setAmount('');
     } catch (error) {
@@ -175,9 +97,8 @@ const DepositModal: React.FC<DepositModalProps> = ({
       alert(
         `Deposit failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -189,13 +110,12 @@ const DepositModal: React.FC<DepositModalProps> = ({
           exit={{ opacity: 0 }}
           initial={{ opacity: 0 }}
         >
-          {/* Backdrop */}
-          <div
+          <button
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={onClose}
+            type="button"
           />
 
-          {/* Modal */}
           <motion.div
             animate={{ scale: 1, opacity: 1 }}
             className="glass-card relative w-full max-w-md rounded-3xl border border-white/20 p-8"
@@ -203,10 +123,10 @@ const DepositModal: React.FC<DepositModalProps> = ({
             initial={{ scale: 0.9, opacity: 0 }}
             transition={{ type: 'spring', duration: 0.5 }}
           >
-            {/* Close button */}
             <button
               className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 transition-colors hover:bg-white/20"
               onClick={onClose}
+              type="button"
             >
               <span className="text-white/80 text-xl">×</span>
             </button>
@@ -214,10 +134,10 @@ const DepositModal: React.FC<DepositModalProps> = ({
             {/* Header */}
             <div className="mb-6 text-center">
               <h3 className="mb-2 font-bold text-2xl text-white">
-                Deposit to {strategy.name}
+                Deposit to {tokenInfo?.name || 'Unknown Token'}
               </h3>
               <p className="text-white/60">
-                Earn {strategy.apy}% APY with {strategy.lockPeriod} lock period
+                Earn {strategy.account.rewardApy}% APY with 30 days lock period
               </p>
             </div>
 
@@ -225,26 +145,31 @@ const DepositModal: React.FC<DepositModalProps> = ({
             <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-white/60">Token:</span>
-                <span className="font-medium text-white">{strategy.token}</span>
+                <span className="font-medium text-white">
+                  {tokenInfo?.name || 'Unknown Token'}
+                </span>
               </div>
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-white/60">APY:</span>
                 <span className="font-medium text-green-400">
-                  {strategy.apy}%
+                  {strategy.account.rewardApy}%
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-white/60">Risk Level:</span>
                 <span
-                  className={`font-medium ${
-                    strategy.risk === 'Low'
-                      ? 'text-green-400'
-                      : strategy.risk === 'Medium'
-                        ? 'text-yellow-400'
-                        : 'text-red-400'
-                  }`}
+                  className={`font-medium ${(() => {
+                    const risk = getStrategyRisk(strategy);
+                    if (risk === 'Low') {
+                      return 'text-green-400';
+                    }
+                    if (risk === 'Medium') {
+                      return 'text-yellow-400';
+                    }
+                    return 'text-red-400';
+                  })()}`}
                 >
-                  {strategy.risk}
+                  {getStrategyRisk(strategy)}
                 </span>
               </div>
             </div>
@@ -253,9 +178,9 @@ const DepositModal: React.FC<DepositModalProps> = ({
               <div>
                 {/* Amount Input */}
                 <div className="mb-6">
-                  <label className="mb-2 block font-medium text-sm text-white/80">
+                  <span className="mb-2 block font-medium text-sm text-white/80">
                     Amount to deposit
-                  </label>
+                  </span>
                   <div className="relative">
                     <input
                       className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition-colors focus:border-indigo-500 focus:outline-none"
@@ -265,7 +190,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
                       value={amount}
                     />
                     <span className="-translate-y-1/2 absolute top-1/2 right-4 transform text-white/60">
-                      {strategy.token}
+                      {tokenInfo?.symbol}
                     </span>
                   </div>
                 </div>
@@ -273,29 +198,35 @@ const DepositModal: React.FC<DepositModalProps> = ({
                 {/* Balance */}
                 <div className="mb-6 text-center">
                   <div className="flex items-center justify-center space-x-2 text-sm text-white/60">
-                    {isLoadingBalance ? (
+                    {isLoadingBalance && (
                       <>
                         <div className="h-3 w-3 animate-spin rounded-full border border-white/30 border-t-white/60" />
                         <span>Loading balance...</span>
                       </>
-                    ) : balance !== null ? (
+                    )}
+                    {!isLoadingBalance && balance !== null && (
                       <>
-                        <span>{`Balance: ${balance.toFixed(6)} ${strategy.token}`}</span>
+                        <span>
+                          {`Balance: ${balance.toFixed(6)} ${tokenInfo?.symbol ?? ''}`}
+                        </span>
                         <button
                           className="text-white/40 transition-colors hover:text-white/60"
-                          onClick={fetchBalance}
+                          onClick={() => tokenInfo && fetchBalance(tokenInfo)}
                           title="Refresh balance"
+                          type="button"
                         >
                           🔄
                         </button>
                       </>
-                    ) : (
+                    )}
+                    {!isLoadingBalance && balance === null && (
                       <>
-                        <span>{`Balance: -- ${strategy.token}`}</span>
+                        <span>{`Balance: -- ${tokenInfo?.symbol ?? ''}`}</span>
                         <button
                           className="text-white/40 transition-colors hover:text-white/60"
-                          onClick={fetchBalance}
+                          onClick={() => tokenInfo && fetchBalance(tokenInfo)}
                           title="Refresh balance"
+                          type="button"
                         >
                           🔄
                         </button>
@@ -306,19 +237,19 @@ const DepositModal: React.FC<DepositModalProps> = ({
                   {/* Devnet Faucet Links */}
                   {balance !== null &&
                     balance === 0 &&
-                    strategy.token !== 'SOL' && (
+                    tokenInfo?.symbol !== 'SOL' && (
                       <div className="mt-2 text-xs">
                         <a
                           className="text-indigo-400 transition-colors hover:text-indigo-300"
                           href={
-                            strategy.token === 'USDC'
+                            tokenInfo?.symbol === 'USDC'
                               ? 'https://spl-token-faucet.com/?token-name=USDC'
                               : 'https://faucet.solana.com/'
                           }
                           rel="noopener noreferrer"
                           target="_blank"
                         >
-                          Get {strategy.token} from Devnet Faucet
+                          Get {tokenInfo?.symbol} from Devnet Faucet
                         </a>
                       </div>
                     )}
@@ -327,6 +258,7 @@ const DepositModal: React.FC<DepositModalProps> = ({
                     <button
                       className="mt-1 text-indigo-400 text-xs transition-colors hover:text-indigo-300"
                       onClick={() => setAmount(balance.toString())}
+                      type="button"
                     >
                       Use Max
                     </button>
@@ -344,17 +276,23 @@ const DepositModal: React.FC<DepositModalProps> = ({
                     Number.parseFloat(amount) > balance
                   }
                   onClick={handleDeposit}
+                  type="button"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center space-x-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                       <span>Processing...</span>
                     </div>
-                  ) : balance !== null &&
-                    Number.parseFloat(amount) > balance ? (
-                    'Insufficient Balance'
                   ) : (
-                    `Deposit ${amount || '0'} ${strategy.token}`
+                    (() => {
+                      if (
+                        balance !== null &&
+                        Number.parseFloat(amount) > balance
+                      ) {
+                        return 'Insufficient Balance';
+                      }
+                      return `Deposit ${amount || '0'} ${tokenInfo?.symbol ?? ''}`;
+                    })()
                   )}
                 </button>
 
@@ -413,5 +351,3 @@ const DepositModal: React.FC<DepositModalProps> = ({
     </AnimatePresence>
   );
 };
-
-export default DepositModal;

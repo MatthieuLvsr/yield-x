@@ -1,28 +1,24 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import {
-  ChevronRight,
-  Clock,
-  DollarSign,
-  ExternalLink,
-  Shield,
-  TrendingUp,
-} from 'lucide-react';
-import type React from 'react';
-import type { FormattedStrategy } from '../../hooks/useStrategies';
+import { Clock, DollarSign, Shield, TrendingUp } from 'lucide-react';
+import type { Strategy } from '@/app/page';
+import { useTokenInfo } from '@/hooks/useStrategies';
+import { getStrategyRisk } from '@/hooks/useStrategiesPagination';
 
 interface StrategyListItemProps {
-  strategy: FormattedStrategy;
-  onSelect?: (strategy: FormattedStrategy) => void;
+  strategy: Strategy;
+  onSelect?: (strategy: Strategy) => void;
   index: number;
 }
 
-const StrategyListItem: React.FC<StrategyListItemProps> = ({
+const StrategyListItem = ({
   strategy,
   onSelect,
   index,
-}) => {
+}: StrategyListItemProps) => {
+  const { tokenInfo } = useTokenInfo(strategy);
+
   const getRiskColor = (risk: string) => {
     switch (risk) {
       case 'Low':
@@ -70,49 +66,43 @@ const StrategyListItem: React.FC<StrategyListItemProps> = ({
         <div className="min-w-0 flex-1">
           <div className="mb-2 flex items-center gap-3">
             <h3 className="truncate font-semibold text-lg text-white transition-colors group-hover:text-blue-400">
-              {strategy.name}
+              {tokenInfo?.symbol || 'Unknown'}
             </h3>
             <div className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/20 px-3 py-1 font-medium text-blue-400 text-sm">
               <DollarSign size={12} />
-              {strategy.token}
+              {tokenInfo?.name || 'Unknown'}
             </div>
           </div>
           <p className="mb-2 line-clamp-1 text-gray-400 text-sm">
-            {strategy.description}
+            {tokenInfo?.name || 'Unknown'} - {tokenInfo?.symbol || 'Unknown'}
           </p>
           <div className="flex items-center gap-4 text-gray-500 text-xs">
-            <span>{strategy.protocol}</span>
+            <span>Yield-X Protocol</span>
             <div className="flex items-center gap-1">
               <Clock size={12} />
-              {strategy.lockPeriod}
+              30 days
             </div>
           </div>
         </div>
 
-        {/* Métriques */}
         <div className="flex items-center gap-8">
-          {/* APY */}
           <div className="text-center">
             <div className="mb-1 font-bold text-2xl text-white">
-              {strategy.apy.toFixed(1)}%
+              {strategy.account.rewardApy.toString()}%
             </div>
             <div className="text-gray-400 text-xs">APY</div>
           </div>
 
-          {/* TVL */}
           <div className="text-center">
-            <div className="mb-1 font-semibold text-gray-300 text-lg">
-              {strategy.tvl}
-            </div>
+            <div className="mb-1 font-semibold text-gray-300 text-lg">0</div>
             <div className="text-gray-400 text-xs">TVL</div>
           </div>
 
-          {/* Risk */}
           <div
-            className={`flex items-center gap-2 rounded-full border px-3 py-1 font-medium text-sm ${getRiskColor(strategy.risk)}`}
+            className={`flex items-center gap-2 rounded-full border px-3 py-1 font-medium text-sm ${getRiskColor(getStrategyRisk(strategy))}`}
           >
-            {getRiskIcon(strategy.risk)}
-            {strategy.risk}
+            {getRiskIcon(getStrategyRisk(strategy))}
+            {getStrategyRisk(strategy)}
           </div>
 
           {/* Action Button */}

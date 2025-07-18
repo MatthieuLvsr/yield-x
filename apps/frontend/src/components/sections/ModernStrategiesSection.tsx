@@ -4,7 +4,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import type React from 'react';
 import { useState } from 'react';
-import DepositModalModern from '@/components/ui/DepositModalModern';
+import { DepositModal } from '@/components/ui/DepositModalModern';
 import YieldButton from '@/components/ui/YieldButton';
 import YieldCard from '@/components/ui/YieldCard';
 import { type FormattedStrategy, useStrategies } from '@/hooks/useStrategies';
@@ -254,12 +254,11 @@ const ModernStrategiesSection: React.FC = () => {
 
       {/* Deposit Modal */}
       {selectedStrategy && (
-        <DepositModalModern
+        <DepositModal
           isOpen={isModalOpen}
           onClose={closeModal}
           strategy={{
             ...selectedStrategy,
-            lockPeriod: '30 days', // Add default lock period
           }}
         />
       )}

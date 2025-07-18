@@ -47,7 +47,7 @@ export const deriveStrategyPda = (
 // Fonction utilitaire pour dériver le PDA du strategy_token_account avec APY
 export const deriveStrategyTokenAccountPda = (
   tokenMint: PublicKey,
-  apy: number,
+  apy: BN,
   programId: PublicKey
 ): PublicKey => {
   const apyBytes = new BN(apy).toArrayLike(Buffer, 'le', 8);
@@ -62,7 +62,7 @@ export const deriveStrategyTokenAccountPda = (
 export const deriveDepositPda = (
   userPubkey: PublicKey,
   tokenMint: PublicKey,
-  apy: number,
+  apy: BN,
   programId: PublicKey
 ): PublicKey => {
   const apyBytes = new BN(apy).toArrayLike(Buffer, 'le', 8);

@@ -1,20 +1,45 @@
 import { useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 import { useCallback, useEffect, useState } from 'react';
-import { getMockDelay, isUsingMockData } from '../lib/config';
+import type { Strategy } from '@/app/page';
+import { type app, getTokenInfo } from '@/lib/stats.action';
 import { PROGRAM_ID, TOKEN_MINTS } from '../lib/constants';
-import { getMockStrategies } from '../lib/mockStrategies';
 
-// Interface pour les stratégies récupérées du contrat
-export interface OnChainStrategy {
-  publicKey: PublicKey;
-  account: {
-    tokenAddress: PublicKey;
-    tokenYieldAddress: PublicKey;
-    date: string; // Comme string pour correspondre à Solana Playground
-    rewardApy: string; // Comme string pour correspondre à Solana Playground
-  };
-}
+/*
+apy
+:
+1200
+description
+:
+"Earn stable yield on USDC through optimized lending protocols"
+id
+:
+"5ikFDxYx"
+lockPeriod
+:
+"30 days"
+name
+:
+"Enhanced USDC Yield"
+protocol
+:
+"Yield-X Protocol"
+publicKey
+:
+PublicKey {_bn: BN}
+risk
+:
+"High"
+token
+:
+"USDC"
+tokenMint
+:
+PublicKey {_bn: BN}
+tvl
+:
+"$0"
+*/
 
 // Interface pour les stratégies formatées pour l'UI
 export interface FormattedStrategy {
@@ -29,6 +54,48 @@ export interface FormattedStrategy {
   protocol: string;
   lockPeriod: string;
   publicKey: PublicKey;
+}
+
+export type TokenInfo = NonNullable<
+  Awaited<ReturnType<ReturnType<typeof app.contract.token>['get']>>['data']
+>;
+
+export const useTokenInfo = (strategy: Strategy) => {
+  const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
+
+  useEffect(() => {
+    const getToken = async () => {
+      const data = await getTokenInfo(strategy.account.tokenAddress.toString());
+      setTokenInfo(data ? data : null);
+    };
+    getToken();
+  }, [strategy]);
+
+  return { tokenInfo };
+};
+
+export function useTokenInfosMap(strategies: Strategy[]) {
+  const [tokenInfos, setTokenInfos] = useState<Record<string, TokenInfo>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        strategies.map(async (s) => {
+          const info = await getTokenInfo(s.account.tokenAddress.toString());
+          return [s.account.tokenAddress.toString(), info];
+        })
+      );
+      if (!cancelled) {
+        setTokenInfos(Object.fromEntries(entries));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [strategies]);
+
+  return tokenInfos;
 }
 
 // Fonction pour mapper les adresses de tokens vers leurs symboles
@@ -80,9 +147,7 @@ const getStrategyDescription = (tokenSymbol: string): string => {
 };
 
 // Fonction pour parser les données de compte Strategy depuis les données raw
-const parseStrategyAccount = (
-  data: Buffer
-): OnChainStrategy['account'] | null => {
+const parseStrategyAccount = (data: Buffer): Strategy['account'] | null => {
   try {
     console.log('Parsing account data, length:', data.length);
     console.log('First 16 bytes (hex):', data.slice(0, 16).toString('hex'));
@@ -148,21 +213,6 @@ export const useStrategies = () => {
     setIsLoading(true);
 
     try {
-      if (isUsingMockData()) {
-        console.log('🔄 Loading mock strategies...');
-
-        // Simuler un délai d'API
-        await new Promise((resolve) => setTimeout(resolve, getMockDelay()));
-
-        const mockStrategies = getMockStrategies();
-        console.log('✅ Mock strategies loaded:', mockStrategies.length);
-        setStrategies(mockStrategies);
-        return;
-      }
-
-      console.log('Fetching strategies from program:', PROGRAM_ID.toString());
-
-      // Récupérer tous les comptes qui appartiennent au programme
       const accounts = await connection.getProgramAccounts(PROGRAM_ID, {
         filters: [
           {
@@ -171,36 +221,7 @@ export const useStrategies = () => {
         ],
       });
 
-      if (accounts.length === 0) {
-        console.log('No strategy accounts found, using fallback strategies');
-        console.log('This could mean:');
-        console.log('1. No Strategy accounts exist on this program');
-        console.log(
-          "2. The dataSize filter (80 bytes) doesn't match the actual account size"
-        );
-        console.log('3. The program ID is incorrect');
-        // Fallback sur des stratégies par défaut si aucune n'est trouvée
-        setStrategies([
-          {
-            id: 'fallback-1',
-            name: 'Stable Yield',
-            token: 'USDC',
-            tokenMint: TOKEN_MINTS.USDC,
-            apy: 8.5,
-            risk: 'Low',
-            tvl: '$0',
-            description: 'Conservative yield strategy with minimal risk',
-            protocol: 'Yield-X Protocol',
-            lockPeriod: '30 days',
-            publicKey: PublicKey.default,
-          },
-        ]);
-        return;
-      }
-
-      console.log('Found accounts:', accounts.length);
       const formattedStrategies: FormattedStrategy[] = [];
-
       for (const { pubkey, account } of accounts) {
         console.log(
           'Processing account:',
@@ -217,19 +238,16 @@ export const useStrategies = () => {
         }
 
         const tokenSymbol = getTokenSymbol(parsedAccount.tokenAddress);
-        // Convertir les strings en nombres pour les calculs
         const rewardApyNumber = Number.parseFloat(parsedAccount.rewardApy);
-        // La valeur rewardApy est déjà en pourcentage (ex: "5" = 5%), pas besoin de diviser par 100
-        const apyPercentage = rewardApyNumber;
 
         formattedStrategies.push({
           id: pubkey.toString().slice(0, 8),
-          name: getStrategyName(tokenSymbol, apyPercentage),
+          name: getStrategyName(tokenSymbol, rewardApyNumber),
           token: tokenSymbol,
           tokenMint: parsedAccount.tokenAddress,
-          apy: apyPercentage,
-          risk: getRiskLevel(apyPercentage),
-          tvl: '$0', // TODO: Calculer la TVL réelle
+          apy: rewardApyNumber,
+          risk: getRiskLevel(rewardApyNumber),
+          tvl: '$0',
           description: getStrategyDescription(tokenSymbol),
           protocol: 'Yield-X Protocol',
           lockPeriod: '30 days',

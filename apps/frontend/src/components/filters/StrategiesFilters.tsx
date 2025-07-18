@@ -22,28 +22,24 @@ interface StrategiesFiltersProps {
   onResetFilters: () => void;
   filterOptions: {
     tokens: string[];
-    protocols: string[];
     apyRange: [number, number];
   };
   totalResults: number;
-  isLoading?: boolean;
 }
 
-const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
+const StrategiesFiltersComponent = ({
   filters,
   onUpdateFilters,
   onResetFilters,
   filterOptions,
   totalResults,
-  isLoading = false,
-}) => {
+}: StrategiesFiltersProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   const hasActiveFilters =
     filters.token !== 'All' ||
     filters.risk !== 'All' ||
-    filters.protocol !== 'All' ||
     filters.searchTerm !== '' ||
     filters.apyRange[0] !== filterOptions.apyRange[0] ||
     filters.apyRange[1] !== filterOptions.apyRange[1];
@@ -203,9 +199,9 @@ const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Filtre Token */}
                 <div className="min-w-0">
-                  <label className="mb-2 block font-medium text-gray-300 text-sm">
+                  <span className="mb-2 block font-medium text-gray-300 text-sm">
                     Token
-                  </label>
+                  </span>
                   <Dropdown
                     icon={<DollarSign className="text-gray-400" size={16} />}
                     onSelect={(value) => onUpdateFilters({ token: value })}
@@ -217,31 +213,19 @@ const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
 
                 {/* Filtre Risk */}
                 <div className="min-w-0">
-                  <label className="mb-2 block font-medium text-gray-300 text-sm">
+                  <span className="mb-2 block font-medium text-gray-300 text-sm">
                     Risk Level
-                  </label>
+                  </span>
                   <Dropdown
                     icon={<Shield className="text-gray-400" size={16} />}
                     onSelect={(value) =>
-                      onUpdateFilters({ risk: value as any })
+                      onUpdateFilters({
+                        risk: value as 'All' | 'Low' | 'Medium' | 'High',
+                      })
                     }
                     options={['All', 'Low', 'Medium', 'High']}
                     title="Risk"
                     value={filters.risk}
-                  />
-                </div>
-
-                {/* Filtre Protocol */}
-                <div className="min-w-0">
-                  <label className="mb-2 block font-medium text-gray-300 text-sm">
-                    Protocol
-                  </label>
-                  <Dropdown
-                    icon={<TrendingUp className="text-gray-400" size={16} />}
-                    onSelect={(value) => onUpdateFilters({ protocol: value })}
-                    options={filterOptions.protocols}
-                    title="Protocol"
-                    value={filters.protocol}
                   />
                 </div>
 
@@ -283,6 +267,7 @@ const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
               <button
                 className="ml-1 rounded-full p-0.5 hover:bg-blue-500/30"
                 onClick={() => onUpdateFilters({ token: 'All' })}
+                type="button"
               >
                 <X size={12} />
               </button>
@@ -301,22 +286,7 @@ const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
               <button
                 className="ml-1 rounded-full p-0.5 hover:bg-gray-500/30"
                 onClick={() => onUpdateFilters({ risk: 'All' })}
-              >
-                <X size={12} />
-              </button>
-            </motion.div>
-          )}
-
-          {filters.protocol !== 'All' && (
-            <motion.div
-              className="flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/20 px-3 py-1 text-purple-400 text-sm"
-              whileHover={{ scale: 1.02 }}
-            >
-              <TrendingUp size={12} />
-              {filters.protocol}
-              <button
-                className="ml-1 rounded-full p-0.5 hover:bg-purple-500/30"
-                onClick={() => onUpdateFilters({ protocol: 'All' })}
+                type="button"
               >
                 <X size={12} />
               </button>
@@ -332,6 +302,7 @@ const StrategiesFiltersComponent: React.FC<StrategiesFiltersProps> = ({
               <button
                 className="ml-1 rounded-full p-0.5 hover:bg-green-500/30"
                 onClick={() => onUpdateFilters({ searchTerm: '' })}
+                type="button"
               >
                 <X size={12} />
               </button>
