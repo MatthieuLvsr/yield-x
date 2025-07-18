@@ -1,0 +1,39 @@
+{
+  "testConfig": {
+    "cluster": "localnet",
+    "programId": "QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk",
+    "timeout": 30000,
+    "retries": 3,
+    "parallel": false
+  },
+  "testData": {
+    "defaultAPY": 1000,
+    "defaultDepositAmount": 1000000,
+    "defaultMarketFeeRate": 250,
+    "testTokenDecimals": 6,
+    "testTokenSupply": 10000000000
+  },
+  "testAccounts": {
+    "fundingAmount": 5000000000,
+    "testUsers": 3
+  },
+  "validation": {
+    "minimumAPY": 100,
+    "maximumAPY": 10000,
+    "minimumDepositAmount": 1000,
+    "maximumDepositAmount": 1000000000000,
+    "penaltyPercentage": 10
+  },
+  "marketplace": {
+    "defaultOrderExpiry": 3600,
+    "minimumOrderSize": 1000,
+    "maximumOrderSize": 1000000000,
+    "defaultPriceDecimals": 6
+  },
+  "logging": {
+    "level": "info",
+    "enableTransactionLogs": true,
+    "enableAccountLogs": false,
+    "enablePerformanceLogs": true
+  }
+}
