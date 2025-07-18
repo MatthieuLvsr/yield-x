@@ -1,4 +1,5 @@
 {
+  "name": "@yield-x/contract",
   "license": "ISC",
   "scripts": {
     "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
