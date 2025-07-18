@@ -7,7 +7,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-yield_x = "5AgAdfDBk9664vxvSVXLcBHMYV7sT6N6gKVbt1iE5Q7K"
+yield_x = "QJvUCdXMYeX2yuYauzVGrtovcP7trePhd5y8jCi21yk"
 
 [registry]
 url = "https://api.apr.dev"
