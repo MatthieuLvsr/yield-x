@@ -1,6 +1,6 @@
-use crate::state::{DepositState, Strategy, Market, Order, OrderType, OrderSide};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
+use crate::state::{DepositState, Market, Order, Strategy};
 
 #[derive(Accounts)]
 #[instruction(token_address: Pubkey, reward_apy: u64)]
@@ -105,120 +105,82 @@ pub struct CreateMarket<'info> {
     #[account(
         init,
         payer = authority,
-        space = 8 + std::mem::size_of::<Market>(),
+        space = 8 + 32 + 32 + 32 + 32 + 8 + 8 + 8,
         seeds = [b"market", strategy.key().as_ref()],
         bump
     )]
     pub market: Account<'info, Market>,
-    
+
     #[account(constraint = strategy.key() != Pubkey::default())]
     pub strategy: Account<'info, Strategy>,
-    
+
     /// CHECK: This is the yield token mint for the strategy
-    pub yield_token_mint: AccountInfo<'info>,
-    
+    #[account(mut)]
+    pub yield_token_mint: Account<'info, Mint>,
+
     /// CHECK: This is the base token mint (SOL or USDC)
-    pub base_token_mint: AccountInfo<'info>,
-    
+    #[account(mut)]
+    pub base_token_mint: Account<'info, Mint>,
+
     #[account(mut)]
     pub authority: Signer<'info>,
-    
+
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
 }
 
 #[derive(Accounts)]
-#[instruction(order_type: OrderType, side: OrderSide, price: u64, quantity: u64, expires_in_seconds: i64)]
+// #[instruction(order_type: OrderType, side: OrderSide, price: u64, quantity: u64, expires_in_seconds: i64)]
 pub struct PlaceOrder<'info> {
     #[account(
         init,
         payer = owner,
-        space = 8 + std::mem::size_of::<Order>(),
+        space = 8 + Order::INIT_SPACE,
         seeds = [b"order", market.key().as_ref(), owner.key().as_ref()],
         bump
     )]
-    pub order: Account<'info, Order>,
-    
+    pub order: Box<Account<'info, Order>>,
+
     #[account(mut)]
-    pub market: Account<'info, Market>,
-    
+    pub market: Box<Account<'info, Market>>,
+
+    /// CHECK: This is the yield token mint for the strategy
+    #[account(mut)]
+    pub yield_token_mint: Account<'info, Mint>,
+
+    /// CHECK: This is the base token mint (SOL or USDC)
+    #[account(mut)]
+    pub base_token_mint: Account<'info, Mint>,
+
     #[account(mut)]
     pub owner: Signer<'info>,
-    
-    /// CHECK: This is the owner's token account for the asset being traded
+
+    #[account(
+        init_if_needed,
+        payer = owner,
+        token::mint = base_token_mint,
+        token::authority = market,
+        seeds = [b"market_token", market.base_token_mint.key().as_ref()],
+        bump,
+    )]
+    pub market_token_account: Account<'info, TokenAccount>,
+
+    #[account(
+        init_if_needed,
+        payer = owner,
+        token::mint = yield_token_mint,
+        token::authority = market,
+        seeds = [b"market_yield", market.yield_token_mint.key().as_ref()],
+        bump,
+    )]
+    pub market_yield_account: Account<'info, TokenAccount>,
+
     #[account(mut)]
-    pub owner_token_account: AccountInfo<'info>,
-    
-    /// CHECK: This is the escrow token account managed by the market
+    pub user_token_account: Account<'info, TokenAccount>,
     #[account(mut)]
-    pub escrow_token_account: AccountInfo<'info>,
-    
+    pub user_yield_account: Account<'info, TokenAccount>,
+
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
-}
-
-#[derive(Accounts)]
-pub struct ExecuteTrade<'info> {
-    #[account(mut)]
-    pub market: Account<'info, Market>,
-    
-    #[account(mut)]
-    pub buy_order: Account<'info, Order>,
-    
-    #[account(mut)]
-    pub sell_order: Account<'info, Order>,
-    
-    /// CHECK: Buyer's YT token account - validated through program logic
-    #[account(mut)]
-    pub buyer_yt_account: AccountInfo<'info>,
-    
-    /// CHECK: Buyer's base token account - validated through program logic
-    #[account(mut)]
-    pub buyer_base_account: AccountInfo<'info>,
-    
-    /// CHECK: Seller's YT token account - validated through program logic
-    #[account(mut)]
-    pub seller_yt_account: AccountInfo<'info>,
-    
-    /// CHECK: Seller's base token account - validated through program logic
-    #[account(mut)]
-    pub seller_base_account: AccountInfo<'info>,
-    
-    /// CHECK: Escrow YT token account - validated through program logic
-    #[account(mut)]
-    pub escrow_yt_account: AccountInfo<'info>,
-    
-    /// CHECK: Escrow base token account - validated through program logic
-    #[account(mut)]
-    pub escrow_base_account: AccountInfo<'info>,
-    
-    pub token_program: Program<'info, Token>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct CancelOrder<'info> {
-    #[account(mut)]
-    pub market: Account<'info, Market>,
-    
-    #[account(
-        mut,
-        constraint = order.owner == owner.key(),
-        close = owner
-    )]
-    pub order: Account<'info, Order>,
-    
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    
-    /// CHECK: This is the owner's token account for receiving back funds
-    #[account(mut)]
-    pub owner_token_account: AccountInfo<'info>,
-    
-    /// CHECK: This is the escrow token account managed by the market
-    #[account(mut)]
-    pub escrow_token_account: AccountInfo<'info>,
-    
-    pub token_program: Program<'info, Token>,
 }
