@@ -7,13 +7,16 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-yield_x = "HaegidjNb9UFKVdvRr4zj4ddgLGe6BXMLHxsVxUVndgF"
+yield_x = "AcRgkMywAriMws6j6rAGe6uFU1KJisdCvMuCTVN3A4hx"
+
+[programs.devnet]
+yield_x = "AcRgkMywAriMws6j6rAGe6uFU1KJisdCvMuCTVN3A4hx"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
