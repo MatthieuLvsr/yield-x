@@ -66,11 +66,14 @@ export const useYieldProgram = () => {
       }
 
       try {
+        // const strategyAccount = await program.account.strategy.fetch(
+        //   strategy.publicKey
+        // );
         const yieldTokenMint = new PublicKey(
           strategy.account.tokenYieldAddress
         );
         const tokenAddress = new PublicKey(strategy.account.tokenAddress);
-        const apy = strategy.account.rewardApy;
+        const apy = new BN(strategy.account.rewardApy * 100);
         const depositAmount = new BN(
           toTokenBaseUnits(amount, token.decimals).toString()
         );
@@ -140,10 +143,6 @@ export const useYieldProgram = () => {
           })
           .transaction();
 
-        // Set the fee payer for the transaction IMMEDIATELY
-        tx.feePayer = wallet.publicKey;
-        console.log('✅ Fee payer set to:', tx.feePayer?.toString());
-
         // Ajouter l'instruction pour créer le compte yield token si nécessaire
         try {
           await connection.getTokenAccountBalance(userYieldTokenAccount);
@@ -161,66 +160,9 @@ export const useYieldProgram = () => {
           tx.instructions.unshift(createATAIx);
         }
 
-        // Vérifier le solde SOL avant d'envoyer la transaction
-        console.log('🔍 Checking SOL balance before sending transaction...');
-        const balance = await connection.getBalance(wallet.publicKey);
-        console.log('💰 Current SOL balance:', balance / 1e9, 'SOL');
-
-        if (balance < 1_000_000) {
-          // 0.001 SOL minimum
-          throw new Error(
-            `Insufficient SOL balance for transaction fees. Current: ${balance / 1e9} SOL, Required: at least 0.001 SOL`
-          );
-        }
-
-        // Vérifier les détails de la transaction
-        console.log('📊 Transaction details:');
-        console.log('- Instructions count:', tx.instructions.length);
-        console.log('- Fee payer:', tx.feePayer?.toString());
-        console.log('- Recent blockhash:', tx.recentBlockhash);
-
-        // Vérifier que le fee payer est bien défini
-        if (!tx.feePayer) {
-          console.error('❌ Fee payer is still undefined! Setting it again...');
-          tx.feePayer = wallet.publicKey;
-          console.log('✅ Fee payer force-set to:', tx.feePayer?.toString());
-        }
-        // Ajouter le blockhash récent si manquant
-        if (!tx.recentBlockhash) {
-          console.log('🔄 Adding recent blockhash...');
-          const { blockhash } = await connection.getLatestBlockhash();
-          tx.recentBlockhash = blockhash;
-          console.log('✅ Recent blockhash added:', blockhash);
-        }
-
-        // Simuler la transaction avant de l'envoyer
-        console.log('🧪 Simulating transaction before sending...');
-        try {
-          const simulation = await connection.simulateTransaction(tx);
-          console.log('✅ Simulation successful:', simulation);
-
-          if (simulation.value.err) {
-            console.error('❌ Simulation failed:', simulation.value.err);
-            throw new Error(
-              `Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`
-            );
-          }
-        } catch (simError) {
-          console.error('❌ Simulation error:', simError);
-          throw new Error(`Failed to simulate transaction: ${simError}`);
-        }
-
         // Envoyer la transaction
-        console.log('📤 Sending transaction to wallet...');
-        console.log('- Wallet connected:', !!wallet.connected);
-        console.log('- Wallet public key:', wallet.publicKey?.toString());
-        console.log(
-          '- Send transaction function available:',
-          !!wallet.sendTransaction
-        );
-
         const signature = await wallet.sendTransaction(tx, connection);
-        console.log('✅ Transaction sent successfully:', signature);
+        console.log('Transaction sent:', signature);
 
         // Attendre la confirmation
         await connection.confirmTransaction(signature, 'confirmed');
