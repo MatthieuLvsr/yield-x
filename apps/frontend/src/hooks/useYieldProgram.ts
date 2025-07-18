@@ -1,25 +1,29 @@
 'use client';
 
-import { AnchorProvider, BN, Program, web3 } from '@coral-xyz/anchor';
+import { AnchorProvider, BN, Program } from '@coral-xyz/anchor';
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, SYSVAR_RENT_PUBKEY, SystemProgram } from '@solana/web3.js';
 import { useCallback, useMemo } from 'react';
-import idl from '../idl/idl.json' with { type: 'json' };
+import type { Strategy } from '@/app/page';
+import idl from '../idl/yield_app.json' with { type: 'json' };
 import { PROGRAM_ID } from '../lib/constants';
 import {
   deriveDepositPda,
   deriveStrategyPda,
   deriveStrategyTokenAccountPda,
 } from '../lib/pda';
-import { getTokenDecimals, toTokenBaseUnits } from '../lib/tokenUtils';
+import { toTokenBaseUnits } from '../lib/tokenUtils';
+import type { TokenInfo } from './useStrategies';
 
 export const useYieldProgram = () => {
   const { connection } = useConnection();
   const wallet = useWallet();
 
   const provider = useMemo(() => {
-    if (!(wallet.publicKey && wallet.signTransaction)) return null;
+    if (!(wallet.publicKey && wallet.signTransaction)) {
+      return null;
+    }
 
     return new AnchorProvider(
       connection,
@@ -29,19 +33,22 @@ export const useYieldProgram = () => {
   }, [connection, wallet]);
 
   const program = useMemo(() => {
-    if (!provider) return null;
+    if (!provider) {
+      return null;
+    }
 
     try {
       console.log('Creating program with IDL:', typeof idl, Object.keys(idl));
       console.log('IDL programId:', idl.programId);
       console.log('Provider:', provider);
 
-      const program = new Program(idl as any, PROGRAM_ID, provider);
+      // biome-ignore lint/suspicious/noExplicitAny: osef
+      const _program = new Program(idl as any, PROGRAM_ID, provider);
       console.log(
         'Program created successfully:',
-        program.programId.toString()
+        _program.programId.toString()
       );
-      return program;
+      return _program;
     } catch (error) {
       console.error('Error creating program:', error);
       console.error(
@@ -53,65 +60,40 @@ export const useYieldProgram = () => {
   }, [provider]);
 
   const deposit = useCallback(
-    async (
-      strategyAddress: PublicKey,
-      tokenMint: PublicKey,
-      amount: number
-    ) => {
+    async (strategy: Strategy, token: TokenInfo, amount: number) => {
       if (!(program && wallet.publicKey && wallet.sendTransaction)) {
         throw new Error('Program or wallet not available');
       }
 
       try {
-        console.log('Starting deposit:', {
-          strategyAddress: strategyAddress.toString(),
-          tokenMint: tokenMint.toString(),
-          amount,
-        });
-
-        // Récupérer les données de la stratégie pour obtenir le yield token mint et l'APY
-        const strategyAccount =
-          await program.account.strategy.fetch(strategyAddress);
-        console.log('Strategy account data:', strategyAccount);
-
+        // const strategyAccount = await program.account.strategy.fetch(
+        //   strategy.publicKey
+        // );
         const yieldTokenMint = new PublicKey(
-          (strategyAccount as any).tokenYieldAddress
+          strategy.account.tokenYieldAddress
         );
-        const apy = (strategyAccount as any).rewardApy;
-        console.log('Yield token mint:', yieldTokenMint.toString());
-        console.log('Strategy APY:', apy);
-
-        // Convertir l'APY en bytes pour le PDA
-        const apyBytes = new BN(apy).toArrayLike(Buffer, 'le', 8);
-
-        // Récupérer dynamiquement les décimales du token
-        const decimals = await getTokenDecimals(connection, tokenMint);
-        console.log('Token decimals:', decimals);
-
-        // Convertir le montant en unités de base du token
+        const tokenAddress = new PublicKey(strategy.account.tokenAddress);
+        const apy = new BN(strategy.account.rewardApy * 100);
         const depositAmount = new BN(
-          toTokenBaseUnits(amount, decimals).toString()
+          toTokenBaseUnits(amount, token.decimals).toString()
         );
 
-        // Dériver les PDAs nécessaires avec l'APY inclus
         const depositPda = deriveDepositPda(
           wallet.publicKey,
-          tokenMint,
+          tokenAddress,
           apy,
           program.programId
         );
 
         console.log('Deposit PDA:', depositPda.toString());
 
-        // Obtenir les comptes de tokens associés
         const userTokenAccount = await getAssociatedTokenAddress(
-          tokenMint,
+          tokenAddress,
           wallet.publicKey
         );
 
-        // Calculer le strategyTokenAccount avec les bonnes seeds (incluant APY)
         const strategyTokenAccount = deriveStrategyTokenAccountPda(
-          tokenMint,
+          tokenAddress,
           apy,
           program.programId
         );
@@ -125,14 +107,14 @@ export const useYieldProgram = () => {
         try {
           await connection.getTokenAccountBalance(userYieldTokenAccount);
           console.log('User yield token account exists');
-        } catch (error) {
+        } catch {
           console.log('User yield token account will be created during mint');
         }
 
         console.log('Accounts for deposit:', {
-          strategy: strategyAddress.toString(),
+          strategy: strategy.publicKey.toString(),
           strategyTokenAccount: strategyTokenAccount.toString(),
-          tokenMint: tokenMint.toString(),
+          tokenMint: strategy.account.tokenAddress.toString(),
           deposit: depositPda.toString(),
           signer: wallet.publicKey.toString(),
           userTokenAccount: userTokenAccount.toString(),
@@ -147,9 +129,9 @@ export const useYieldProgram = () => {
         const tx = await program.methods
           .deposit(depositAmount)
           .accounts({
-            strategy: strategyAddress,
+            strategy: strategy.publicKey,
             strategyTokenAccount,
-            tokenMint,
+            tokenMint: tokenAddress,
             deposit: depositPda,
             signer: wallet.publicKey,
             userTokenAccount,
@@ -164,7 +146,7 @@ export const useYieldProgram = () => {
         // Ajouter l'instruction pour créer le compte yield token si nécessaire
         try {
           await connection.getTokenAccountBalance(userYieldTokenAccount);
-        } catch (error) {
+        } catch {
           console.log('Adding create ATA instruction for yield token');
           const { createAssociatedTokenAccountInstruction } = await import(
             '@solana/spl-token'

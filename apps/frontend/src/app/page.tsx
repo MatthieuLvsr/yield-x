@@ -3,7 +3,7 @@ import AnalyticsSection from '@/components/sections/AnalyticsSection';
 import { ModernHeroSection } from '@/components/sections/ModernHeroSection';
 import ModernMarketplaceSection from '@/components/sections/ModernMarketplaceSection';
 import ModernPortfolioSection from '@/components/sections/ModernPortfolioSection';
-import StrategiesSection from '@/components/sections/StrategiesSection';
+import { StrategiesSection } from '@/components/sections/StrategiesSection';
 import { YieldProtocolOverview } from '@/components/sections/YieldProtocolOverview';
 import DataModeIndicator from '@/components/ui/DataModeIndicator';
 import DynamicBackground from '@/components/ui/DynamicBackground';

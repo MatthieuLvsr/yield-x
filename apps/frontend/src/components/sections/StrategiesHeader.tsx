@@ -1,19 +1,14 @@
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import type { Stats } from '@/app/page';
 
 interface StrategiesHeaderProps {
   strategiesCount: number;
   stats: Stats;
-  onRefresh?: () => void;
-  isLoading?: boolean;
 }
 
 const StrategiesHeader = ({
   strategiesCount,
   stats,
-  onRefresh,
-  isLoading = false,
 }: StrategiesHeaderProps) => {
   return (
     <div className="mb-12 text-center">
@@ -62,21 +57,6 @@ const StrategiesHeader = ({
           </div>
           <div className="text-gray-400 text-sm">Average APY</div>
         </div>
-
-        <motion.button
-          className="flex items-center gap-2 rounded-xl border border-gray-700/50 bg-gray-800/40 px-4 py-2 text-white transition-all duration-200 hover:bg-gray-700/60 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={isLoading}
-          onClick={onRefresh}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <ArrowPathIcon
-            className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`}
-          />
-          <span className="font-medium text-sm">
-            {isLoading ? 'Refreshing...' : 'Refresh Strategies'}
-          </span>
-        </motion.button>
       </motion.div>
     </div>
   );
